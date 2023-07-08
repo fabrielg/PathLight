@@ -6,12 +6,13 @@ public final class PathFinder extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
+        this.saveDefaultConfig();
 
+        getServer().getConsoleSender().sendMessage("§aPathFinder is enabled");
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        getServer().getConsoleSender().sendMessage("§cPathFinder is disabled");
     }
 }
