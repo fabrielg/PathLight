@@ -4,8 +4,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class PathFinder extends JavaPlugin {
 
+    private PathManager pathManager;
+
     @Override
     public void onEnable() {
+        pathManager = new PathManager(this);
         this.saveDefaultConfig();
 
         getServer().getConsoleSender().sendMessage("§aPathFinder is enabled");
