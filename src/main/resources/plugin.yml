@@ -1,0 +1,4 @@
+name: PathFinder
+version: '${project.version}'
+main: fr.aqua_tuor.pathfinder.PathFinder
+api-version: 1.19
