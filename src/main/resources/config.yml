@@ -1,0 +1,11 @@
+nodes:
+  0:
+    x: 0.5
+    y: 87
+    z: 0.5
+    world: world
+  1:
+    x: 4.5
+    y: 88
+    z: -2.5
+    world: world
