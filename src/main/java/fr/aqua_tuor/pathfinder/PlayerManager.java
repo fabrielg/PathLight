@@ -13,7 +13,7 @@ public class PlayerManager {
 
     private PathManager pathManager;
 
-    HashMap<String, Inventory> playersEditing = new HashMap<>();
+    HashMap<String, HashMap<Integer, ItemStack>> playersEditing = new HashMap<>();
 
     public PlayerManager(PathManager pathManager) {
         this.pathManager = pathManager;
@@ -34,9 +34,30 @@ public class PlayerManager {
         return playersEditing.containsKey(player.getName());
     }
 
+    private HashMap<Integer, ItemStack> getItems(Player player) {
+        HashMap<Integer, ItemStack> items = new HashMap<>();
+        Inventory inventory = player.getInventory();
+
+        // Inventory contents
+        for (int i = 0; i < inventory.getSize(); i++) {
+            if (inventory.getItem(i) != null) {
+                items.put(i, inventory.getItem(i));
+            }
+        }
+
+        // Armor contents
+        for (int i = 0; i < player.getInventory().getArmorContents().length; i++) {
+            if (player.getInventory().getArmorContents()[i] != null) {
+                items.put(i + 100, player.getInventory().getArmorContents()[i]);
+            }
+        }
+
+        return items;
+    }
+
     public void addPlayer(Player player) {
         if (!playersEditing.containsValue(player.getName())) {
-            playersEditing.put(player.getName(), player.getInventory());
+            playersEditing.put(player.getName(), getItems(player));
             giveEditorTools(player);
         }
     }
@@ -44,12 +65,20 @@ public class PlayerManager {
     public void removePlayer(Player player) {
         if (playersEditing.containsKey(player.getName())) {
             player.getInventory().clear();
-            player.getInventory().setContents(playersEditing.get(player.getName()).getContents());
+
+            playersEditing.get(player.getName()).forEach((slot, item) -> {
+                if (slot < 100) {
+                    player.getInventory().setItem(slot, item);
+                } else {
+                    player.getInventory().setArmorContents(new ItemStack[]{item});
+                }
+            });
+
             playersEditing.remove(player.getName());
         }
     }
 
-    public HashMap<String, Inventory> getPlayersEditing() {
+    public HashMap<String, HashMap<Integer, ItemStack>> getPlayersEditing() {
         return playersEditing;
     }
 
