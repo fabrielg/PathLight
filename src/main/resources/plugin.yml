@@ -2,3 +2,10 @@ name: PathFinder
 version: '${project.version}'
 main: fr.aqua_tuor.pathfinder.PathFinder
 api-version: 1.19
+commands:
+  edit:
+    description: Editor mode
+    usage: /edit
+    aliases: [ e ]
+    permission: pathfinder.edit
+    permission-message: You don't have permission to use this command

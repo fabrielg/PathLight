@@ -13,6 +13,9 @@ public final class PathFinder extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(pathManager), this);
 
+        // Commands
+        getCommand("edit").setExecutor(new PathfinderCommand(pathManager));
+
         getServer().getConsoleSender().sendMessage("§aPathFinder is enabled");
     }
 
