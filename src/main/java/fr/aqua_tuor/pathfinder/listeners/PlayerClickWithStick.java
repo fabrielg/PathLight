@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 
 public class PlayerClickWithStick implements Listener {
 
@@ -22,11 +23,14 @@ public class PlayerClickWithStick implements Listener {
     @EventHandler
     public void onPlayerClickWithStick(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        EquipmentSlot e = event.getHand();
+        if (!e.equals(EquipmentSlot.HAND)) return;
         if (pathManager.getPlayerManager().isEditing(player)) {
             if (player.getInventory().getItemInMainHand().getType().name().contains("STICK")) {
 
                 // Place a new node
                 if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+                    event.setCancelled(true);
                     Block block = event.getClickedBlock();
                     // Get the middle of the block
                     double x = block.getX() + 0.5;
@@ -50,13 +54,10 @@ public class PlayerClickWithStick implements Listener {
                     Node node = new Node(id + 1, x, y, z, player.getWorld());
                     pathManager.addNode(node);
 
-                    String message = "§aA node added";
+                    String message = "§aA node has been added";
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
-
                 }
-
             }
         }
     }
-
 }
