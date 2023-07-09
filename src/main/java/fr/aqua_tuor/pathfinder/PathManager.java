@@ -21,7 +21,7 @@ public class PathManager {
 
         // Start coundown
         countdown = new GameCountdown(this);
-        countdown.runTaskTimer(plugin, 0, 20);
+        countdown.runTaskTimer(plugin, 0, 10);
     }
 
     public PathFinder getPlugin() {

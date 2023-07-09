@@ -27,7 +27,7 @@ public class Node {
         if (toShow != isShow) isShow = toShow;
 
         if (isShow) {
-            world.spawnParticle(Particle.REDSTONE, x, y, z, 0, 0, 0, 0, 1, new Particle.DustOptions(Color.RED, 1));
+            world.spawnParticle(Particle.REDSTONE, x, y, z, 10, 0, 0, 0, 0, new Particle.DustOptions(Color.RED, 1));
         }
     }
 
@@ -40,7 +40,7 @@ public class Node {
         if (toActive != isActive) isActive = toActive;
 
         if (isActive) {
-            world.spawnParticle(Particle.REDSTONE, x, y, z, 0, 0, 0, 0, 1, new Particle.DustOptions(Color.GREEN, 1));
+            world.spawnParticle(Particle.REDSTONE, x, y, z, 3, 0, 0, 0, 0, new Particle.DustOptions(Color.GREEN, 2));
         }
     }
 
