@@ -40,4 +40,12 @@ public class Node {
     public void setShow(boolean isShow) {
         this.isShow = isShow;
     }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean isActive) {
+        this.isActive = isActive;
+    }
 }
