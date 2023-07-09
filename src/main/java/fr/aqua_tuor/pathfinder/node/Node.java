@@ -3,6 +3,8 @@ package fr.aqua_tuor.pathfinder.node;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 
 public class Node {
     private final int id;
@@ -42,6 +44,17 @@ public class Node {
         if (isActive) {
             world.spawnParticle(Particle.REDSTONE, x, y, z, 3, 0, 0, 0, 0, new Particle.DustOptions(Color.GREEN, 2));
         }
+    }
+
+    public static void showCurrent(Player player) {
+        Block block = player.getTargetBlock(null, 5);
+        if (block == null || block.getType().name().contains("AIR")) return;
+
+        double x = block.getX() + 0.5;
+        double y = block.getY() + 1.5;
+        double z = block.getZ() + 0.5;
+        World world = block.getWorld();
+        world.spawnParticle(Particle.REDSTONE, x, y, z, 10, 0, 0, 0, 0, new Particle.DustOptions(Color.BLACK, 1));
     }
 
     public int getId() {

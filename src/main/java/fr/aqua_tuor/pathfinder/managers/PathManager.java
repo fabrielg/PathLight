@@ -23,7 +23,7 @@ public class PathManager {
         paths = new ArrayList<>();
         loadNodesConfig();
 
-        // Start coundown
+        // Start countdown
         countdown = new GameCountdown(this);
         countdown.runTaskTimer(plugin, 0, 10);
     }
