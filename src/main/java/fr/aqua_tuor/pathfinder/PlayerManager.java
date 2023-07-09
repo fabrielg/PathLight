@@ -13,7 +13,7 @@ public class PlayerManager {
 
     private PathManager pathManager;
 
-    HashMap<Player, Inventory> playersEditing = new HashMap<>();
+    HashMap<String, Inventory> playersEditing = new HashMap<>();
 
     public PlayerManager(PathManager pathManager) {
         this.pathManager = pathManager;
@@ -31,25 +31,25 @@ public class PlayerManager {
     }
 
     public boolean isEditing(Player player) {
-        return playersEditing.containsValue(player);
+        return playersEditing.containsKey(player.getName());
     }
 
     public void addPlayer(Player player) {
-        if (!playersEditing.containsValue(player)) {
-            playersEditing.put(player, player.getInventory());
+        if (!playersEditing.containsValue(player.getName())) {
+            playersEditing.put(player.getName(), player.getInventory());
             giveEditorTools(player);
         }
     }
 
     public void removePlayer(Player player) {
-        if (playersEditing.containsValue(player)) {
+        if (playersEditing.containsKey(player.getName())) {
             player.getInventory().clear();
-            player.getInventory().setContents(playersEditing.get(player).getContents());
-            playersEditing.remove(player);
+            player.getInventory().setContents(playersEditing.get(player.getName()).getContents());
+            playersEditing.remove(player.getName());
         }
     }
 
-    public HashMap<Player, Inventory> getPlayersEditing() {
+    public HashMap<String, Inventory> getPlayersEditing() {
         return playersEditing;
     }
 
