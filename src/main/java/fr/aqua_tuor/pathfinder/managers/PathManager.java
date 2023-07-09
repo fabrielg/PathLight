@@ -58,13 +58,10 @@ public class PathManager {
     }
 
     public Node getNodeByCoords(double x, double y, double z) {
-        int i = 1;
         for (Node node : nodes) {
-            if (i == nodes.size()) break;
             if (node.getX() == x && node.getY() == y && node.getZ() == z) {
                 return node;
             }
-            i++;
         }
         return null;
     }

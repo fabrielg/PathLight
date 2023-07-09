@@ -56,6 +56,27 @@ public class PlayerClickWithStick implements Listener {
 
                     String message = "§aA node has been added";
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+                } else if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
+                    event.setCancelled(true);
+                    Block block = event.getClickedBlock();
+                    // Get the middle of the block
+                    double x = block.getX() + 0.5;
+                    double y = block.getY() + 1.5;
+                    double z = block.getZ() + 0.5;
+
+                    // Check if the node exists
+                    Node node = pathManager.getNodeByCoords(x, y, z);
+                    if (node == null) {
+                        String message = "§cThere is no node on this block";
+                        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+                        return;
+                    }
+
+                    // Remove the node
+                    pathManager.removeNode(node.getId());
+
+                    String message = "§aA node has been removed";
+                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
                 }
             }
         }
