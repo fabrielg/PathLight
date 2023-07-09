@@ -40,7 +40,6 @@ public class PathManager {
             int y = plugin.getConfig().getInt("nodes." + key + ".y");
             int z = plugin.getConfig().getInt("nodes." + key + ".z");
             String worldName = plugin.getConfig().getString("nodes." + key + ".world");
-            Bukkit.broadcastMessage(id + " " + x + " " + y + " " + z + " " + worldName);
             Node node = new Node(id, x, y, z, Bukkit.getWorld(worldName));
             nodes.add(node);
         });
