@@ -49,4 +49,8 @@ public class PlayerManager {
         }
     }
 
+    public HashMap<Player, Inventory> getPlayersEditing() {
+        return playersEditing;
+    }
+
 }

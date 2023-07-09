@@ -11,12 +11,17 @@ public class PathManager {
 
     private ArrayList<Path> paths;
     private ArrayList<Node> nodes = new ArrayList<>();
+    private GameCountdown countdown;
 
     public PathManager(PathFinder plugin) {
         this.plugin = plugin;
         this.playerManager = new PlayerManager(this);
         paths = new ArrayList<>();
         loadNodesConfig();
+
+        // Start coundown
+        countdown = new GameCountdown(this);
+        countdown.runTaskTimer(plugin, 0, 20);
     }
 
     public PathFinder getPlugin() {
@@ -39,6 +44,14 @@ public class PathManager {
 
     public PlayerManager getPlayerManager() {
         return playerManager;
+    }
+
+    public ArrayList<Path> getPaths() {
+        return paths;
+    }
+
+    public ArrayList<Node> getNodes() {
+        return nodes;
     }
 
 }
