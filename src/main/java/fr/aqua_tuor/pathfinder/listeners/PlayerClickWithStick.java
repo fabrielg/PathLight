@@ -34,7 +34,7 @@ public class PlayerClickWithStick implements Listener {
                     Block block = event.getClickedBlock();
                     // Get the middle of the block
                     double x = block.getX() + 0.5;
-                    double y = block.getY() + 0.5;
+                    double y = block.getY() + 1.5;
                     double z = block.getZ() + 0.5;
 
                     // Check if the node already exists
