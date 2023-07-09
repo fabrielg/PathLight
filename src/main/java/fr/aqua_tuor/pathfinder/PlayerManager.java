@@ -5,6 +5,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,10 +24,12 @@ public class PlayerManager {
         player.getInventory().clear();
 
         ItemStack stickEditor = new ItemStack(Material.STICK);
-        stickEditor.getItemMeta().setDisplayName("§aStick Editor");
-        stickEditor.getItemMeta().addEnchant(Enchantment.DURABILITY, 1, true);
-        stickEditor.getItemMeta().addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
-        stickEditor.getItemMeta().setUnbreakable(true);
+        ItemMeta stickEditorMeta = stickEditor.getItemMeta();
+        stickEditorMeta.setDisplayName("§aStick Editor");
+        stickEditorMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+        stickEditorMeta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+        stickEditorMeta.setUnbreakable(true);
+        stickEditor.setItemMeta(stickEditorMeta);
         player.getInventory().setItem(0, stickEditor);
     }
 
