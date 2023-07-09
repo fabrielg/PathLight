@@ -1,6 +1,5 @@
 package fr.aqua_tuor.pathfinder.path;
 
-import fr.aqua_tuor.pathfinder.PathType;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;

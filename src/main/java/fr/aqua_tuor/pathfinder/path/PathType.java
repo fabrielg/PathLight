@@ -1,4 +1,4 @@
-package fr.aqua_tuor.pathfinder;
+package fr.aqua_tuor.pathfinder.path;
 
 public enum PathType {
     LINE,

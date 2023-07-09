@@ -3,7 +3,7 @@ package fr.aqua_tuor.pathfinder.managers;
 import fr.aqua_tuor.pathfinder.tasks.GameCountdown;
 import fr.aqua_tuor.pathfinder.node.Node;
 import fr.aqua_tuor.pathfinder.path.Path;
-import fr.aqua_tuor.pathfinder.path.PathFinder;
+import fr.aqua_tuor.pathfinder.PathFinder;
 import org.bukkit.Bukkit;
 
 import java.util.ArrayList;
@@ -55,6 +55,30 @@ public class PathManager {
 
     public ArrayList<Node> getNodes() {
         return nodes;
+    }
+
+    public Node getNodeByCoords(double x, double y, double z) {
+        for (Node node : nodes) {
+            if (node.getX() == x && node.getY() == y && node.getZ() == z) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    public void addNode(Node node) {
+        nodes.add(node);
+        plugin.getConfig().set("nodes." + node.getId() + ".x", node.getX());
+        plugin.getConfig().set("nodes." + node.getId() + ".y", node.getY());
+        plugin.getConfig().set("nodes." + node.getId() + ".z", node.getZ());
+        plugin.getConfig().set("nodes." + node.getId() + ".world", node.getWorld().getName());
+        plugin.saveConfig();
+    }
+
+    public void removeNode(int id) {
+        nodes.removeIf(node -> node.getId() == id);
+        plugin.getConfig().set("nodes." + id, null);
+        plugin.saveConfig();
     }
 
 }

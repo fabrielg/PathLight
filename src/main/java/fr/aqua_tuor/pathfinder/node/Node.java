@@ -6,14 +6,14 @@ import org.bukkit.World;
 
 public class Node {
     private final int id;
-    private final int x;
-    private final int y;
-    private final int z;
+    private final double x;
+    private final double y;
+    private final double z;
     private final World world;
     private boolean isShow;
     private boolean isActive;
 
-    public Node(int id, int x, int y, int z, World world) {
+    public Node(int id, double x, double y, double z, World world) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -48,15 +48,15 @@ public class Node {
         return id;
     }
 
-    public int getX() {
+    public double getX() {
         return x;
     }
 
-    public int getY() {
+    public double getY() {
         return y;
     }
 
-    public int getZ() {
+    public double getZ() {
         return z;
     }
 
