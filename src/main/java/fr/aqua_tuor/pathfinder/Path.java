@@ -62,7 +62,7 @@ public class Path {
             x += deltaX;
             y += deltaY;
             z += deltaZ;
-            start.getWorld().spawnParticle(org.bukkit.Particle.REDSTONE, x, y, z, 0, 0, 0, 0, 1, new Particle.DustOptions(color, 1));
+            start.getWorld().spawnParticle(Particle.REDSTONE, x, y, z, 0, 0, 0, 0, 1, new Particle.DustOptions(color, 1));
         }
 
     }
