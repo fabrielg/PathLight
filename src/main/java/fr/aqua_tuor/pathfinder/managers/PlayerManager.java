@@ -1,4 +1,4 @@
-package fr.aqua_tuor.pathfinder;
+package fr.aqua_tuor.pathfinder.managers;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -7,7 +7,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class PlayerManager {

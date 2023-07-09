@@ -1,4 +1,4 @@
-package fr.aqua_tuor.pathfinder;
+package fr.aqua_tuor.pathfinder.node;
 
 import org.bukkit.Color;
 import org.bukkit.Particle;

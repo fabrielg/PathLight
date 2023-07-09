@@ -1,5 +1,6 @@
-package fr.aqua_tuor.pathfinder;
+package fr.aqua_tuor.pathfinder.commands;
 
+import fr.aqua_tuor.pathfinder.managers.PathManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

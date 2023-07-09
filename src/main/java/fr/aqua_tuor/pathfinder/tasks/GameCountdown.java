@@ -1,5 +1,6 @@
-package fr.aqua_tuor.pathfinder;
+package fr.aqua_tuor.pathfinder.tasks;
 
+import fr.aqua_tuor.pathfinder.managers.PathManager;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class GameCountdown extends BukkitRunnable {

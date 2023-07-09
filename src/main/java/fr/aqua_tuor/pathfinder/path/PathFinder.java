@@ -1,5 +1,8 @@
-package fr.aqua_tuor.pathfinder;
+package fr.aqua_tuor.pathfinder.path;
 
+import fr.aqua_tuor.pathfinder.commands.PathfinderCommand;
+import fr.aqua_tuor.pathfinder.listeners.PlayerJoinListener;
+import fr.aqua_tuor.pathfinder.managers.PathManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class PathFinder extends JavaPlugin {

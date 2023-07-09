@@ -1,6 +1,6 @@
 name: PathFinder
 version: '${project.version}'
-main: fr.aqua_tuor.pathfinder.PathFinder
+main: fr.aqua_tuor.pathfinder.path.PathFinder
 api-version: 1.19
 commands:
   edit:

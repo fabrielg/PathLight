@@ -1,5 +1,9 @@
-package fr.aqua_tuor.pathfinder;
+package fr.aqua_tuor.pathfinder.managers;
 
+import fr.aqua_tuor.pathfinder.tasks.GameCountdown;
+import fr.aqua_tuor.pathfinder.node.Node;
+import fr.aqua_tuor.pathfinder.path.Path;
+import fr.aqua_tuor.pathfinder.path.PathFinder;
 import org.bukkit.Bukkit;
 
 import java.util.ArrayList;

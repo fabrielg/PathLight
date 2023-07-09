@@ -1,5 +1,6 @@
-package fr.aqua_tuor.pathfinder;
+package fr.aqua_tuor.pathfinder.listeners;
 
+import fr.aqua_tuor.pathfinder.managers.PathManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
