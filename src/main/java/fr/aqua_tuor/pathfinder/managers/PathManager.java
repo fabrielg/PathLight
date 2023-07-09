@@ -36,9 +36,9 @@ public class PathManager {
         nodes.clear();
         plugin.getConfig().getConfigurationSection("nodes").getKeys(false).forEach(key -> {
             int id = Integer.parseInt(key);
-            int x = plugin.getConfig().getInt("nodes." + key + ".x");
-            int y = plugin.getConfig().getInt("nodes." + key + ".y");
-            int z = plugin.getConfig().getInt("nodes." + key + ".z");
+            double x = plugin.getConfig().getDouble("nodes." + key + ".x");
+            double y = plugin.getConfig().getDouble("nodes." + key + ".y");
+            double z = plugin.getConfig().getDouble("nodes." + key + ".z");
             String worldName = plugin.getConfig().getString("nodes." + key + ".world");
             Node node = new Node(id, x, y, z, Bukkit.getWorld(worldName));
             nodes.add(node);
