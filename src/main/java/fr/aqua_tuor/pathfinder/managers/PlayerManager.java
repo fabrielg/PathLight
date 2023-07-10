@@ -1,5 +1,6 @@
 package fr.aqua_tuor.pathfinder.managers;
 
+import fr.aqua_tuor.pathfinder.node.Node;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -15,7 +16,7 @@ public class PlayerManager {
     private PathManager pathManager;
 
     HashMap<String, HashMap<Integer, ItemStack>> playersEditing = new HashMap<>();
-    HashMap<String, List> playersNodesSelected = new HashMap<>();
+    HashMap<String, Node> playersNodesSelected = new HashMap<>();
 
     public PlayerManager(PathManager pathManager) {
         this.pathManager = pathManager;
@@ -86,7 +87,7 @@ public class PlayerManager {
         return playersEditing;
     }
 
-    public HashMap<String, List> getPlayersNodesSelected() {
+    public HashMap<String, Node> getPlayersNodesSelected() {
         return playersNodesSelected;
     }
 

@@ -46,30 +46,23 @@ public class PlayerClickWithStick implements Listener {
                     if (pathManager.getNodeByCoords(x, y, z) != null) {
                         Node node = pathManager.getNodeByCoords(x, y, z);
 
-                        if (node.getType() == NodeType.NORMAL) {
-                            node.setType(NodeType.SELECTED);
-                        } else if (node.getType() == NodeType.SELECTED) {
-                            node.setType(NodeType.NORMAL);
-                        }
-
-                        if (pathManager.getPlayerManager().getPlayersNodesSelected().size() == 0) {
-                            List<Node> nodes = new ArrayList<>();
-                            nodes.add(node);
-
-                            pathManager.getPlayerManager().getPlayersNodesSelected().put(player.getName(), nodes);
-                        } else if (pathManager.getPlayerManager().getPlayersNodesSelected().size() == 1) {
-                            // Check if the node is already selected
-                            if (pathManager.getPlayerManager().getPlayersNodesSelected().get(player.getName()).contains(node)) {
-                                // Unselect the node
-                                pathManager.getPlayerManager().getPlayersNodesSelected().get(player.getName()).remove(node);
-                                if (pathManager.getPlayerManager().getPlayersNodesSelected().get(player.getName()).size() == 0) {
-                                    pathManager.getPlayerManager().getPlayersNodesSelected().remove(player.getName());
-                                }
+                        // Check if the node is already selected
+                        if (pathManager.getPlayerManager().getPlayersNodesSelected().containsKey(player.getName())) {
+                            Node selectedNode = pathManager.getPlayerManager().getPlayersNodesSelected().get(player.getName());
+                            if (selectedNode.getId() == node.getId()) {
+                                // Remove the node from the selected nodes
+                                pathManager.getPlayerManager().getPlayersNodesSelected().remove(player.getName());
+                                node.setType(NodeType.NORMAL);
                             } else {
-                                // Add the node
-                                pathManager.getPlayerManager().getPlayersNodesSelected().get(player.getName()).add(node);
+                                // So the node selected is the second node
+                                // TODO: Add code to link the two nodes and create a path
                             }
+                        } else {
+                            // Add the node to the selected nodes
+                            pathManager.getPlayerManager().getPlayersNodesSelected().put(player.getName(), node);
+                            node.setType(NodeType.SELECTED);
                         }
+
                         return;
                     }
 
