@@ -86,6 +86,19 @@ public class PlayerClickWithStick implements Listener {
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
                 } else if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
                     event.setCancelled(true);
+
+                    // Check if the player has selected a node before
+                    if (pathManager.getPlayerManager().getPlayersNodesSelected().containsKey(player.getName())) {
+                        String message = "§cCancelling the addition of a path";
+                        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+
+                        // Remove the node from the selected nodes
+                        Node node = pathManager.getPlayerManager().getPlayersNodesSelected().get(player.getName());
+                        pathManager.getPlayerManager().getPlayersNodesSelected().remove(player.getName());
+                        node.setType(NodeType.NORMAL);
+                        return;
+                    }
+
                     Block block = event.getClickedBlock();
                     // Get the middle of the block
                     double x = block.getX() + 0.5;
