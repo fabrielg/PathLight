@@ -8,12 +8,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class PlayerManager {
 
     private PathManager pathManager;
 
     HashMap<String, HashMap<Integer, ItemStack>> playersEditing = new HashMap<>();
+    HashMap<String, List> playersNodesSelected = new HashMap<>();
 
     public PlayerManager(PathManager pathManager) {
         this.pathManager = pathManager;
@@ -82,6 +84,10 @@ public class PlayerManager {
 
     public HashMap<String, HashMap<Integer, ItemStack>> getPlayersEditing() {
         return playersEditing;
+    }
+
+    public HashMap<String, List> getPlayersNodesSelected() {
+        return playersNodesSelected;
     }
 
 }

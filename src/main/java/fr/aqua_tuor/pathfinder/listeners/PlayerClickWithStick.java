@@ -12,6 +12,9 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PlayerClickWithStick implements Listener {
 
     private PathManager pathManager;
@@ -39,8 +42,25 @@ public class PlayerClickWithStick implements Listener {
 
                     // Check if the node already exists
                     if (pathManager.getNodeByCoords(x, y, z) != null) {
-                        String message = "§cA node already exists on this block";
-                        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+                        Node node = pathManager.getNodeByCoords(x, y, z);
+                        if (pathManager.getPlayerManager().getPlayersNodesSelected().size() == 0) {
+                            List<Node> nodes = new ArrayList<>();
+                            nodes.add(node);
+
+                            pathManager.getPlayerManager().getPlayersNodesSelected().put(player.getName(), nodes);
+                        } else if (pathManager.getPlayerManager().getPlayersNodesSelected().size() == 1) {
+                            // Check if the node is already selected
+                            if (pathManager.getPlayerManager().getPlayersNodesSelected().get(player.getName()).contains(node)) {
+                                // Unselect the node
+                                pathManager.getPlayerManager().getPlayersNodesSelected().get(player.getName()).remove(node);
+                                if (pathManager.getPlayerManager().getPlayersNodesSelected().get(player.getName()).size() == 0) {
+                                    pathManager.getPlayerManager().getPlayersNodesSelected().remove(player.getName());
+                                }
+                            } else {
+                                // Add the node
+                                pathManager.getPlayerManager().getPlayersNodesSelected().get(player.getName()).add(node);
+                            }
+                        }
                         return;
                     }
 
