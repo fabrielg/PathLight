@@ -26,9 +26,10 @@ public class PlayerClickWithStick implements Listener {
 
     @EventHandler
     public void onPlayerClickWithStick(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
         EquipmentSlot e = event.getHand();
-        if (!e.equals(EquipmentSlot.HAND)) return;
+        if (!e.equals(EquipmentSlot.OFF_HAND)) return;
+
+        Player player = event.getPlayer();
         if (pathManager.getPlayerManager().isEditing(player)) {
             if (player.getInventory().getItemInMainHand().getType().name().contains("STICK")) {
 
