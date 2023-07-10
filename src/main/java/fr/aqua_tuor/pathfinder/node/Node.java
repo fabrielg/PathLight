@@ -29,7 +29,7 @@ public class Node {
         if (toShow != isShow) isShow = toShow;
 
         if (isShow) {
-            world.spawnParticle(Particle.REDSTONE, x, y, z, 10, 0, 0, 0, 0, type.getDustOptions());
+            world.spawnParticle(Particle.REDSTONE, x, y, z, 10, 0, 0, 0, 500, type.getDustOptions());
         }
     }
 
