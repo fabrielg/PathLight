@@ -56,17 +56,23 @@ public class PlayerClickWithStick implements Listener {
                                 // Remove the node from the selected nodes
                                 pathManager.getPlayerManager().getPlayersNodesSelected().remove(player.getName());
                                 node.setType(NodeType.NORMAL);
-                                Bukkit.broadcastMessage("§aThe node has been unselected");
+                                String message = "§aThe node has been unselected";
+                                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
                             } else {
                                 // So the node selected is the second node
                                 // TODO: Add code to link the two nodes and create a path
-                                Bukkit.broadcastMessage("§aThe path has been created");
+                                pathManager.getPlayerManager().getPlayersNodesSelected().remove(player.getName());
+                                selectedNode.setType(NodeType.NORMAL);
+                                node.setType(NodeType.NORMAL);
+                                String message = "§aThe path has been created";
+                                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
                             }
                         } else {
                             // Add the node to the selected nodes
                             pathManager.getPlayerManager().getPlayersNodesSelected().put(player.getName(), node);
                             node.setType(NodeType.SELECTED);
-                            Bukkit.broadcastMessage("§aThe node has been selected");
+                            String message = "§aThe node has been selected";
+                            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
                         }
 
                         return;
