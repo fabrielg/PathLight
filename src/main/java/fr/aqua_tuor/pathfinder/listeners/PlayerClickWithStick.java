@@ -2,6 +2,7 @@ package fr.aqua_tuor.pathfinder.listeners;
 
 import fr.aqua_tuor.pathfinder.managers.PathManager;
 import fr.aqua_tuor.pathfinder.node.Node;
+import fr.aqua_tuor.pathfinder.node.NodeType;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.block.Block;
@@ -43,6 +44,13 @@ public class PlayerClickWithStick implements Listener {
                     // Check if the node already exists
                     if (pathManager.getNodeByCoords(x, y, z) != null) {
                         Node node = pathManager.getNodeByCoords(x, y, z);
+
+                        if (node.getType() == NodeType.NORMAL) {
+                            node.setType(NodeType.SELECTED);
+                        } else if (node.getType() == NodeType.SELECTED) {
+                            node.setType(NodeType.NORMAL);
+                        }
+
                         if (pathManager.getPlayerManager().getPlayersNodesSelected().size() == 0) {
                             List<Node> nodes = new ArrayList<>();
                             nodes.add(node);

@@ -13,7 +13,7 @@ public class Node {
     private final double z;
     private final World world;
     private boolean isShow;
-    private boolean isActive;
+    private NodeType type;
 
     public Node(int id, double x, double y, double z, World world) {
         this.id = id;
@@ -22,27 +22,14 @@ public class Node {
         this.z = z;
         this.world = world;
         this.isShow = false;
-        this.isActive = false;
+        this.type = NodeType.NORMAL;
     }
 
     public void show(boolean toShow) {
         if (toShow != isShow) isShow = toShow;
 
         if (isShow) {
-            world.spawnParticle(Particle.REDSTONE, x, y, z, 10, 0, 0, 0, 0, new Particle.DustOptions(Color.RED, 1));
-        }
-    }
-
-    public void active(boolean toActive) {
-        if (!isShow) {
-            isActive = false;
-            return;
-        }
-
-        if (toActive != isActive) isActive = toActive;
-
-        if (isActive) {
-            world.spawnParticle(Particle.REDSTONE, x, y, z, 3, 0, 0, 0, 0, new Particle.DustOptions(Color.GREEN, 2));
+            world.spawnParticle(Particle.REDSTONE, x, y, z, 10, 0, 0, 0, 0, type.getDustOptions());
         }
     }
 
@@ -55,6 +42,13 @@ public class Node {
         double z = block.getZ() + 0.5;
         World world = block.getWorld();
         world.spawnParticle(Particle.REDSTONE, x, y, z, 10, 0, 0, 0, 0, new Particle.DustOptions(Color.BLACK, 1));
+    }
+
+    public void setType(NodeType type) {
+        this.type = type;
+    }
+    public NodeType getType() {
+        return type;
     }
 
     public int getId() {
@@ -81,7 +75,4 @@ public class Node {
         return isShow;
     }
 
-    public boolean isActive() {
-        return isActive;
-    }
 }

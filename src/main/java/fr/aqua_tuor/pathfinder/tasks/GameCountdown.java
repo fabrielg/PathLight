@@ -22,7 +22,6 @@ public class GameCountdown extends BukkitRunnable {
             pathManager.getNodes().forEach(node -> {
                 node.show(true);
 
-                if (pathManager.getPlayerManager().getPlayersNodesSelected().values().contains(node)) node.active(true);
             });
 
             // Show selected block if player is editing and has the stick in hand
