@@ -5,6 +5,7 @@ import fr.aqua_tuor.pathfinder.node.Node;
 import fr.aqua_tuor.pathfinder.node.NodeType;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -26,8 +27,6 @@ public class PlayerClickWithStick implements Listener {
 
     @EventHandler
     public void onPlayerClickWithStick(PlayerInteractEvent event) {
-        EquipmentSlot e = event.getHand();
-        if (!e.equals(EquipmentSlot.OFF_HAND)) return;
 
         Player player = event.getPlayer();
         if (pathManager.getPlayerManager().isEditing(player)) {
@@ -35,6 +34,10 @@ public class PlayerClickWithStick implements Listener {
 
                 // Place a new node
                 if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+
+                    EquipmentSlot e = event.getHand();
+                    if (!e.equals(EquipmentSlot.OFF_HAND)) return;
+
                     event.setCancelled(true);
                     Block block = event.getClickedBlock();
                     // Get the middle of the block
@@ -53,14 +56,17 @@ public class PlayerClickWithStick implements Listener {
                                 // Remove the node from the selected nodes
                                 pathManager.getPlayerManager().getPlayersNodesSelected().remove(player.getName());
                                 node.setType(NodeType.NORMAL);
+                                Bukkit.broadcastMessage("§aThe node has been unselected");
                             } else {
                                 // So the node selected is the second node
                                 // TODO: Add code to link the two nodes and create a path
+                                Bukkit.broadcastMessage("§aThe path has been created");
                             }
                         } else {
                             // Add the node to the selected nodes
                             pathManager.getPlayerManager().getPlayersNodesSelected().put(player.getName(), node);
                             node.setType(NodeType.SELECTED);
+                            Bukkit.broadcastMessage("§aThe node has been selected");
                         }
 
                         return;
