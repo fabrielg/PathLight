@@ -58,9 +58,9 @@ public class GameCountdown extends BukkitRunnable {
 
                         pathManager.getPlayerManager().getPlayersPathsSelected().put(playerName, path);
                         path.drawPath();
+                    } else {
+                        Node.showCurrent(player);
                     }
-
-                    Node.showCurrent(player);
                 }
             });
 
