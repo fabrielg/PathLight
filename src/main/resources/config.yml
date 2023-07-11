@@ -9,3 +9,10 @@ nodes:
     y: 88
     z: -2.5
     world: world
+
+paths:
+  0:
+    start: 0
+    end: 1
+    type: LINE
+    color: YELLOW
