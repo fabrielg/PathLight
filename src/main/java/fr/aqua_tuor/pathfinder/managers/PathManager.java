@@ -1,10 +1,12 @@
 package fr.aqua_tuor.pathfinder.managers;
 
+import fr.aqua_tuor.pathfinder.path.PathType;
 import fr.aqua_tuor.pathfinder.tasks.GameCountdown;
 import fr.aqua_tuor.pathfinder.node.Node;
 import fr.aqua_tuor.pathfinder.path.Path;
 import fr.aqua_tuor.pathfinder.PathFinder;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 
 import java.util.ArrayList;
 
@@ -22,9 +24,10 @@ public class PathManager {
         this.playerManager = new PlayerManager(this);
 
         paths = new ArrayList<>();
+        loadNodesConfig();
 
         paths = new ArrayList<>();
-        loadNodesConfig();
+        loadPathsConfig();
 
         // Start countdown
         countdown = new GameCountdown(this);
@@ -33,6 +36,20 @@ public class PathManager {
 
     public PathFinder getPlugin() {
         return plugin;
+    }
+
+    public void loadPathsConfig() {
+        paths.clear();
+        plugin.getConfig().getConfigurationSection("paths").getKeys(false).forEach(key -> {
+            int id = Integer.parseInt(key);
+            int startId = plugin.getConfig().getInt("paths." + key + ".start");
+            int endId = plugin.getConfig().getInt("paths." + key + ".end");
+            PathType type = PathType.valueOf(plugin.getConfig().getString("paths." + key + ".type"));
+            Color color = getColorByString(plugin.getConfig().getString("paths." + key + ".color"));
+
+            Path path = new Path(id, getNodeById(startId), getNodeById(endId), type, color);
+            paths.add(path);
+        });
     }
 
     public void loadNodesConfig() {
@@ -60,6 +77,15 @@ public class PathManager {
         return nodes;
     }
 
+    public Node getNodeById(int id) {
+        for (Node node : nodes) {
+            if (node.getId() == id) {
+                return node;
+            }
+        }
+        return null;
+    }
+
     public Node getNodeByCoords(double x, double y, double z) {
         for (Node node : nodes) {
             if (node.getX() == x && node.getY() == y && node.getZ() == z) {
@@ -84,7 +110,17 @@ public class PathManager {
         plugin.saveConfig();
     }
 
-    public int getLastId() {
+    public int getLastPathId() {
+        int lastId = 0;
+        for (Path path : paths) {
+            if (path.getId() > lastId) {
+                lastId = path.getId();
+            }
+        }
+        return lastId;
+    }
+
+    public int getLastNodeId() {
         int lastId = 0;
         for (Node node : nodes) {
             if (node.getId() > lastId) {
@@ -92,6 +128,45 @@ public class PathManager {
             }
         }
         return lastId;
+    }
+
+    public Color getColorByString(String colorString) {
+        switch (colorString) {
+            case "SILVER":
+                return Color.SILVER;
+            case "GRAY":
+                return Color.GRAY;
+            case "BLACK":
+                return Color.BLACK;
+            case "RED":
+                return Color.RED;
+            case "MAROON":
+                return Color.MAROON;
+            case "YELLOW":
+                return Color.YELLOW;
+            case "OLIVE":
+                return Color.OLIVE;
+            case "LIME":
+                return Color.LIME;
+            case "GREEN":
+                return Color.GREEN;
+            case "AQUA":
+                return Color.AQUA;
+            case "TEAL":
+                return Color.TEAL;
+            case "BLUE":
+                return Color.BLUE;
+            case "NAVY":
+                return Color.NAVY;
+            case "FUCHSIA":
+                return Color.FUCHSIA;
+            case "PURPLE":
+                return Color.PURPLE;
+            case "ORANGE":
+                return Color.ORANGE;
+            default:
+                return Color.WHITE;
+        }
     }
 
 }

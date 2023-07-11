@@ -1,7 +1,6 @@
 package fr.aqua_tuor.pathfinder.tasks;
 
 import fr.aqua_tuor.pathfinder.managers.PathManager;
-import fr.aqua_tuor.pathfinder.node.NodeType;
 import fr.aqua_tuor.pathfinder.path.Path;
 import fr.aqua_tuor.pathfinder.path.PathType;
 import org.bukkit.Color;
@@ -46,11 +45,11 @@ public class GameCountdown extends BukkitRunnable {
                         World worldEnd = block.getWorld();
 
                         Node startNode = pathManager.getPlayerManager().getPlayersNodesSelected().get(playerName);
-                        Node endNode = new Node(pathManager.getLastId() + 1, xEnd, yEnd, zEnd, worldEnd);
+                        Node endNode = new Node(pathManager.getLastNodeId() + 1, xEnd, yEnd, zEnd, worldEnd);
 
                         Path path;
                         if (pathManager.getPlayerManager().getPlayersPathsSelected().get(playerName) == null)
-                            path = new Path(startNode, endNode, PathType.LINE, Color.WHITE);
+                            path = new Path(pathManager.getLastPathId() + 1, startNode, endNode, PathType.LINE, Color.WHITE);
                         else {
                             path = pathManager.getPlayerManager().getPlayersPathsSelected().get(playerName);
                             path.setEnd(endNode);

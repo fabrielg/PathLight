@@ -6,7 +6,6 @@ import fr.aqua_tuor.pathfinder.node.NodeType;
 import fr.aqua_tuor.pathfinder.path.Path;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,9 +13,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class PlayerClickWithStick implements Listener {
 
@@ -88,7 +84,7 @@ public class PlayerClickWithStick implements Listener {
                     }
 
                     // Add the node
-                    int lastId = pathManager.getLastId();
+                    int lastId = pathManager.getLastNodeId();
 
                     Node node = new Node(lastId + 1, x, y, z, player.getWorld());
                     pathManager.addNode(node);

@@ -8,20 +8,23 @@ import org.bukkit.util.Vector;
 
 public class Path {
 
+    private int id;
     private final Node start;
     private Node end;
     private PathType type;
     private final Color color;
     private double distanceBetweenParticles = 0.5;
 
-    public Path(Node start, Node end, PathType type, Color color) {
+    public Path(int id, Node start, Node end, PathType type, Color color) {
+        this.id = id;
         this.start = start;
         this.end = end;
         this.type = type;
         this.color = color;
     }
 
-    public Path(Node start, Node end, PathType type, Color color, double distanceBetweenParticles) {
+    public Path(int id, Node start, Node end, PathType type, Color color, double distanceBetweenParticles) {
+        this.id = id;
         this.start = start;
         this.end = end;
         this.type = type;
@@ -59,6 +62,14 @@ public class Path {
         return to.subtract(from);
     }
 
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public Node getStart() {
         return start;
