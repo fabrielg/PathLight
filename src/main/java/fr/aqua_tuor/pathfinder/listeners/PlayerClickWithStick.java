@@ -3,6 +3,7 @@ package fr.aqua_tuor.pathfinder.listeners;
 import fr.aqua_tuor.pathfinder.managers.PathManager;
 import fr.aqua_tuor.pathfinder.node.Node;
 import fr.aqua_tuor.pathfinder.node.NodeType;
+import fr.aqua_tuor.pathfinder.path.Path;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -55,15 +56,23 @@ public class PlayerClickWithStick implements Listener {
                             if (selectedNode.getId() == node.getId()) {
                                 // Remove the node from the selected nodes
                                 pathManager.getPlayerManager().getPlayersNodesSelected().remove(player.getName());
+
+                                // Remove the path from the selected paths
+                                pathManager.getPlayerManager().getPlayersPathsSelected().remove(player.getName());
+
                                 node.setType(NodeType.NORMAL);
                                 String message = "§aThe node has been unselected";
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
                             } else {
                                 // So the node selected is the second node
-                                // TODO: Add code to link the two nodes and create a path
                                 pathManager.getPlayerManager().getPlayersNodesSelected().remove(player.getName());
                                 selectedNode.setType(NodeType.NORMAL);
                                 node.setType(NodeType.NORMAL);
+
+                                // Get the path
+                                Path path = pathManager.getPlayerManager().getPlayersPathsSelected().get(player.getName());
+                                pathManager.getPaths().add(path);
+
                                 String message = "§aThe path has been created";
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
                             }

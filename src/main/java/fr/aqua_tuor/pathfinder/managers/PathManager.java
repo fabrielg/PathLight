@@ -13,13 +13,16 @@ public class PathManager {
     private final PathFinder plugin;
     private PlayerManager playerManager;
 
-    private ArrayList<Path> paths;
+    private ArrayList<Path> paths = new ArrayList<>();
     private ArrayList<Node> nodes = new ArrayList<>();
     private GameCountdown countdown;
 
     public PathManager(PathFinder plugin) {
         this.plugin = plugin;
         this.playerManager = new PlayerManager(this);
+
+        paths = new ArrayList<>();
+
         paths = new ArrayList<>();
         loadNodesConfig();
 
