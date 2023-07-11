@@ -6,6 +6,7 @@ import fr.aqua_tuor.pathfinder.node.NodeType;
 import fr.aqua_tuor.pathfinder.path.Path;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -41,10 +42,11 @@ public class PlayerClickWithStick implements Listener {
                     double x = block.getX() + 0.5;
                     double y = block.getY() + 1.5;
                     double z = block.getZ() + 0.5;
+                    World world = block.getWorld();
 
                     // Check if the node already exists
-                    if (pathManager.getNodeByCoords(x, y, z) != null) {
-                        Node node = pathManager.getNodeByCoords(x, y, z);
+                    if (pathManager.getNodeByCoords(x, y, z, world) != null) {
+                        Node node = pathManager.getNodeByCoords(x, y, z, world);
 
                         // Check if the node is already selected
                         if (pathManager.getPlayerManager().getPlayersNodesSelected().containsKey(player.getName())) {
@@ -111,9 +113,10 @@ public class PlayerClickWithStick implements Listener {
                     double x = block.getX() + 0.5;
                     double y = block.getY() + 1.5;
                     double z = block.getZ() + 0.5;
+                    World world = block.getWorld();
 
                     // Check if the node exists
-                    Node node = pathManager.getNodeByCoords(x, y, z);
+                    Node node = pathManager.getNodeByCoords(x, y, z, world);
                     if (node == null) {
                         String message = "§cThere is no node on this block";
                         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));

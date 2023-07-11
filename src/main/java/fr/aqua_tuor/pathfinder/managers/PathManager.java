@@ -7,6 +7,7 @@ import fr.aqua_tuor.pathfinder.path.Path;
 import fr.aqua_tuor.pathfinder.PathFinder;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.World;
 
 import java.util.ArrayList;
 
@@ -86,9 +87,9 @@ public class PathManager {
         return null;
     }
 
-    public Node getNodeByCoords(double x, double y, double z) {
+    public Node getNodeByCoords(double x, double y, double z, World world) {
         for (Node node : nodes) {
-            if (node.getX() == x && node.getY() == y && node.getZ() == z) {
+            if (node.getX() == x && node.getY() == y && node.getZ() == z && node.getWorld().equals(world)) {
                 return node;
             }
         }
