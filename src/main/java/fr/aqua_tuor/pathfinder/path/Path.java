@@ -4,6 +4,7 @@ import fr.aqua_tuor.pathfinder.node.Node;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.util.Vector;
 
 public class Path {
 
@@ -11,12 +12,21 @@ public class Path {
     private final Node end;
     private PathType type;
     private final Color color;
+    private double distanceBetweenParticles = 0.5;
 
     public Path(Node start, Node end, PathType type, Color color) {
         this.start = start;
         this.end = end;
         this.type = type;
         this.color = color;
+    }
+
+    public Path(Node start, Node end, PathType type, Color color, double distanceBetweenParticles) {
+        this.start = start;
+        this.end = end;
+        this.type = type;
+        this.color = color;
+        this.distanceBetweenParticles = distanceBetweenParticles;
     }
 
     public void drawPath() {
@@ -32,31 +42,21 @@ public class Path {
     }
 
     public void drawLine() {
-        double distance = getDistance();
-        double x = start.getX();
-        double y = start.getY();
-        double z = start.getZ();
-        double x2 = end.getX();
-        double y2 = end.getY();
-        double z2 = end.getZ();
-        double deltaX = (x2 - x) / distance;
-        double deltaY = (y2 - y) / distance;
-        double deltaZ = (z2 - z) / distance;
-
-        for (int i = 0; i < distance; i++) {
-            x += deltaX;
-            y += deltaY;
-            z += deltaZ;
-            start.getWorld().spawnParticle(Particle.REDSTONE, x, y, z, 0, 0, 0, 0, 1, new Particle.DustOptions(color, 1));
+        Vector vector  = getDirectionBetweenLocations();
+        for (double i = 1; i <= start.getLocation().distance(end.getLocation()); i += distanceBetweenParticles) {
+            vector.multiply(i);
+            start.getLocation().add(vector);
+            start.getLocation().getWorld().spawnParticle(Particle.REDSTONE, start.getLocation(), 1, 0, 0, 0, 0, new Particle.DustOptions(color, 1));
+            start.getLocation().subtract(vector);
+            vector.normalize();
         }
-
     }
 
 
-    public double getDistance() {
-        Location startLoc = start.getLocation();
-        Location endLoc = end.getLocation();
-        return startLoc.distance(endLoc);
+    public Vector getDirectionBetweenLocations() {
+        Vector from = start.getLocation().toVector();
+        Vector to = end.getLocation().toVector();
+        return to.subtract(from);
     }
 
 
@@ -78,6 +78,14 @@ public class Path {
 
     public Color getColor() {
         return color;
+    }
+
+    public double getDistanceBetweenParticles() {
+        return distanceBetweenParticles;
+    }
+
+    public void setDistanceBetweenParticles(double distanceBetweenParticles) {
+        this.distanceBetweenParticles = distanceBetweenParticles;
     }
 
 }
