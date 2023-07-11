@@ -9,7 +9,7 @@ import org.bukkit.util.Vector;
 public class Path {
 
     private final Node start;
-    private final Node end;
+    private Node end;
     private PathType type;
     private final Color color;
     private double distanceBetweenParticles = 0.5;
@@ -66,6 +66,10 @@ public class Path {
 
     public Node getEnd() {
         return end;
+    }
+
+    public void setEnd(Node end) {
+        this.end = end;
     }
 
     public PathType getType() {

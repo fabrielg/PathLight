@@ -81,4 +81,14 @@ public class PathManager {
         plugin.saveConfig();
     }
 
+    public int getLastId() {
+        int lastId = 0;
+        for (Node node : nodes) {
+            if (node.getId() > lastId) {
+                lastId = node.getId();
+            }
+        }
+        return lastId;
+    }
+
 }

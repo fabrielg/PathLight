@@ -79,13 +79,9 @@ public class PlayerClickWithStick implements Listener {
                     }
 
                     // Add the node
-                    int id = 0;
-                    for (Node node : pathManager.getNodes()) {
-                        if (node.getId() > id) {
-                            id = node.getId();
-                        }
-                    }
-                    Node node = new Node(id + 1, x, y, z, player.getWorld());
+                    int lastId = pathManager.getLastId();
+
+                    Node node = new Node(lastId + 1, x, y, z, player.getWorld());
                     pathManager.addNode(node);
 
                     String message = "§aA node has been added";
