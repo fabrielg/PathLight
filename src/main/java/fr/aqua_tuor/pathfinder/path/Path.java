@@ -1,37 +1,22 @@
 package fr.aqua_tuor.pathfinder.path;
 
+import fr.aqua_tuor.pathfinder.node.Node;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 
 public class Path {
 
-    private final Location start;
-    private final Location end;
-    private final PathType type;
+    private final Node start;
+    private final Node end;
+    private PathType type;
     private final Color color;
 
-    public Path(Location start, Location end, PathType type, Color color) {
+    public Path(Node start, Node end, PathType type, Color color) {
         this.start = start;
         this.end = end;
         this.type = type;
         this.color = color;
-    }
-
-    public Location getStart() {
-        return start;
-    }
-
-    public Location getEnd() {
-        return end;
-    }
-
-    public PathType getType() {
-        return type;
-    }
-
-    public Color getColor() {
-        return color;
     }
 
     public void drawPath() {
@@ -69,7 +54,30 @@ public class Path {
 
 
     public double getDistance() {
-        return start.distance(end);
+        Location startLoc = start.getLocation();
+        Location endLoc = end.getLocation();
+        return startLoc.distance(endLoc);
+    }
+
+
+    public Node getStart() {
+        return start;
+    }
+
+    public Node getEnd() {
+        return end;
+    }
+
+    public PathType getType() {
+        return type;
+    }
+
+    public void setType(PathType type) {
+        this.type = type;
+    }
+
+    public Color getColor() {
+        return color;
     }
 
 }

@@ -1,6 +1,7 @@
 package fr.aqua_tuor.pathfinder.node;
 
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -42,6 +43,10 @@ public class Node {
         double z = block.getZ() + 0.5;
         World world = block.getWorld();
         world.spawnParticle(Particle.REDSTONE, x, y, z, 10, 0, 0, 0, 0, new Particle.DustOptions(Color.BLACK, 1));
+    }
+
+    public Location getLocation() {
+        return new Location(world, x, y, z);
     }
 
     public void setType(NodeType type) {
