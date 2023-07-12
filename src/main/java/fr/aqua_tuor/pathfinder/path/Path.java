@@ -12,7 +12,7 @@ public class Path {
     private final Node start;
     private Node end;
     private PathType type;
-    private final Color color;
+    private Color color;
     private double distanceBetweenParticles = 0.2;
 
     public Path(int id, Node start, Node end, PathType type, Color color) {
@@ -91,6 +91,10 @@ public class Path {
 
     public Color getColor() {
         return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     public double getDistanceBetweenParticles() {

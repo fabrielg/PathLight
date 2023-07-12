@@ -59,6 +59,15 @@ public class GameCountdown extends BukkitRunnable {
                             path.setEnd(endNode);
                         }
 
+                        // Check if the end location is a node
+                        if (pathManager.getNodeByCoords(xEnd, yEnd, zEnd, worldEnd) != null) {
+                            // Set YELLOW color
+                            path.setColor(Color.YELLOW);
+                        } else {
+                            // Set WHITE color
+                            path.setColor(Color.WHITE);
+                        }
+
                         pathManager.getPlayerManager().getPlayersPathsSelected().put(playerName, path);
                         path.drawPath();
                     } else {
