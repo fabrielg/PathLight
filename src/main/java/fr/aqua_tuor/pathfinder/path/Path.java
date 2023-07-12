@@ -45,10 +45,6 @@ public class Path {
     }
 
     public void drawLine() {
-        System.out.println(start.getLocation().distance(end.getLocation()));
-        System.out.println("start: " + start.getLocation());
-        System.out.println("end: " + end.getLocation());
-        System.out.println("\n");
         Vector vector  = getDirectionBetweenLocations();
         for (double i = 1; i <= start.getLocation().distance(end.getLocation()); i += distanceBetweenParticles) {
             vector.normalize().multiply(i);
