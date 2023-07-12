@@ -13,7 +13,7 @@ public class Path {
     private Node end;
     private PathType type;
     private final Color color;
-    private double distanceBetweenParticles = 0.5;
+    private double distanceBetweenParticles = 0.2;
 
     public Path(int id, Node start, Node end, PathType type, Color color) {
         this.id = id;
@@ -45,13 +45,15 @@ public class Path {
     }
 
     public void drawLine() {
+        System.out.println(start.getLocation().distance(end.getLocation()));
+        System.out.println("start: " + start.getLocation());
+        System.out.println("end: " + end.getLocation());
+        System.out.println("\n");
         Vector vector  = getDirectionBetweenLocations();
         for (double i = 1; i <= start.getLocation().distance(end.getLocation()); i += distanceBetweenParticles) {
-            vector.multiply(i);
-            start.getLocation().add(vector);
-            start.getLocation().getWorld().spawnParticle(Particle.REDSTONE, start.getLocation(), 1, 0, 0, 0, 0, new Particle.DustOptions(color, 1));
-            start.getLocation().subtract(vector);
-            vector.normalize();
+            vector.normalize().multiply(i);
+            Location location = start.getLocation().clone().add(vector);
+            location.getWorld().spawnParticle(Particle.REDSTONE, location, 3, 0, 0, 0, 500, new Particle.DustOptions(color, 1));
         }
     }
 
