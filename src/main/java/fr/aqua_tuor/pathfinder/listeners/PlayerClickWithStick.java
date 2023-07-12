@@ -69,7 +69,12 @@ public class PlayerClickWithStick implements Listener {
 
                                 // Get the path
                                 Path path = pathManager.getPlayerManager().getPlayersPathsSelected().get(player.getName());
-                                pathManager.getPaths().add(path);
+
+                                // Add the path
+                                pathManager.addPath(path);
+
+                                // Remove the path from the selected paths
+                                pathManager.getPlayerManager().getPlayersPathsSelected().remove(player.getName());
 
                                 String message = "§aThe path has been created";
                                 player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));

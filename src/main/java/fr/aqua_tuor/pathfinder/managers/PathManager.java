@@ -111,6 +111,21 @@ public class PathManager {
         plugin.saveConfig();
     }
 
+    public void addPath(Path path) {
+        paths.add(path);
+        plugin.getConfig().set("paths." + path.getId() + ".start", path.getStart().getId());
+        plugin.getConfig().set("paths." + path.getId() + ".end", path.getEnd().getId());
+        plugin.getConfig().set("paths." + path.getId() + ".type", path.getType().toString());
+        plugin.getConfig().set("paths." + path.getId() + ".color", getColorString(path.getColor()));
+        plugin.saveConfig();
+    }
+
+    public void removePath(int id) {
+        paths.removeIf(path -> path.getId() == id);
+        plugin.getConfig().set("paths." + id, null);
+        plugin.saveConfig();
+    }
+
     public int getLastPathId() {
         int lastId = 0;
         for (Path path : paths) {
@@ -167,6 +182,44 @@ public class PathManager {
                 return Color.ORANGE;
             default:
                 return Color.WHITE;
+        }
+    }
+
+    public String getColorString(Color color) {
+        if (color.equals(Color.SILVER)) {
+            return "SILVER";
+        } else if (color.equals(Color.GRAY)) {
+            return "GRAY";
+        } else if (color.equals(Color.BLACK)) {
+            return "BLACK";
+        } else if (color.equals(Color.RED)) {
+            return "RED";
+        } else if (color.equals(Color.MAROON)) {
+            return "MAROON";
+        } else if (color.equals(Color.YELLOW)) {
+            return "YELLOW";
+        } else if (color.equals(Color.OLIVE)) {
+            return "OLIVE";
+        } else if (color.equals(Color.LIME)) {
+            return "LIME";
+        } else if (color.equals(Color.GREEN)) {
+            return "GREEN";
+        } else if (color.equals(Color.AQUA)) {
+            return "AQUA";
+        } else if (color.equals(Color.TEAL)) {
+            return "TEAL";
+        } else if (color.equals(Color.BLUE)) {
+            return "BLUE";
+        } else if (color.equals(Color.NAVY)) {
+            return "NAVY";
+        } else if (color.equals(Color.FUCHSIA)) {
+            return "FUCHSIA";
+        } else if (color.equals(Color.PURPLE)) {
+            return "PURPLE";
+        } else if (color.equals(Color.ORANGE)) {
+            return "ORANGE";
+        } else {
+            return "WHITE";
         }
     }
 
