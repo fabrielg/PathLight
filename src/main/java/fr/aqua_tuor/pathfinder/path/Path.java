@@ -32,7 +32,7 @@ public class Path {
         this.distanceBetweenParticles = distanceBetweenParticles;
     }
 
-    public void drawPath() {
+    public void draw() {
         switch (type) {
             case LINE:
                 drawLine();

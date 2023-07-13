@@ -24,11 +24,15 @@ public class GameCountdown extends BukkitRunnable {
         // Check if one player is editing mode
         if (pathManager.getPlayerManager().getPlayersEditing().size() > 0) {
 
-            // Show nodes
+            // Show nodes and paths
             pathManager.getNodes().forEach(node -> {
                 node.show(true);
 
             });
+
+            for (Path path : pathManager.getPaths()) {
+                path.draw();
+            }
 
             // Show selected block if player is editing and has the stick in hand
             pathManager.getPlayerManager().getPlayersEditing().keySet().forEach(playerName -> {
@@ -76,7 +80,7 @@ public class GameCountdown extends BukkitRunnable {
                         }
 
                         pathManager.getPlayerManager().getPlayersPathsSelected().put(playerName, path);
-                        path.drawPath();
+                        path.draw();
                     } else {
                         Node.showCurrent(player);
                     }
