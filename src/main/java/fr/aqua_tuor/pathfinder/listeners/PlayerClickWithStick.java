@@ -90,6 +90,16 @@ public class PlayerClickWithStick implements Listener {
                         return;
                     }
 
+                    // Check if the player has selected a path before
+                    if (pathManager.getPlayerManager().getPlayersPathsSelected().containsKey(player.getName())) {
+                        String message = "§cCancelling the addition of a path";
+                        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+
+                        // Remove the path from the selected paths
+                        pathManager.getPlayerManager().getPlayersPathsSelected().remove(player.getName());
+                        return;
+                    }
+
                     // Add the node
                     int lastId = pathManager.getLastNodeId();
 
@@ -98,7 +108,9 @@ public class PlayerClickWithStick implements Listener {
 
                     String message = "§aA node has been added";
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
-                } else if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
+                }
+
+                else if (event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
                     event.setCancelled(true);
 
                     // Check if the player has selected a node before
