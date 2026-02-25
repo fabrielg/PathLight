@@ -1,12 +1,14 @@
 package io.github.fabrielg.pathlight;
 
 import io.github.fabrielg.pathlight.data.DataManager;
+import io.github.fabrielg.pathlight.graph.NavigationGraph;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PathLightPlugin extends JavaPlugin {
 
 	private static PathLightPlugin instance;
 	private DataManager dataManager;
+	private NavigationGraph navigationGraph;
 
 	@Override
 	public void onEnable()
@@ -19,6 +21,9 @@ public class PathLightPlugin extends JavaPlugin {
 
 		this.dataManager = new DataManager(this);
 		dataManager.load();
+
+		this.navigationGraph = new NavigationGraph(dataManager);
+		navigationGraph.build();
 
 		getLogger().info("PathLight enabled successfully.");
 	}
@@ -39,6 +44,11 @@ public class PathLightPlugin extends JavaPlugin {
 	public DataManager getDataManager()
 	{
 		return dataManager;
+	}
+
+	public NavigationGraph getNavigationGraph()
+	{
+		return navigationGraph;
 	}
 
 }
