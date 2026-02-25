@@ -1,6 +1,7 @@
 package io.github.fabrielg.pathlight;
 
 import io.github.fabrielg.pathlight.data.DataManager;
+import io.github.fabrielg.pathlight.graph.AStarPathfinder;
 import io.github.fabrielg.pathlight.graph.NavigationGraph;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -9,6 +10,7 @@ public class PathLightPlugin extends JavaPlugin {
 	private static PathLightPlugin instance;
 	private DataManager dataManager;
 	private NavigationGraph navigationGraph;
+	private AStarPathfinder pathfinder;
 
 	@Override
 	public void onEnable()
@@ -25,6 +27,8 @@ public class PathLightPlugin extends JavaPlugin {
 		this.navigationGraph = new NavigationGraph(dataManager);
 		navigationGraph.build();
 
+		this.pathfinder = new AStarPathfinder(navigationGraph);
+
 		getLogger().info("PathLight enabled successfully.");
 	}
 
@@ -36,19 +40,9 @@ public class PathLightPlugin extends JavaPlugin {
 		getLogger().info("PathLight disabled.");
 	}
 
-	public static PathLightPlugin getInstance()
-	{
-		return instance;
-	}
-
-	public DataManager getDataManager()
-	{
-		return dataManager;
-	}
-
-	public NavigationGraph getNavigationGraph()
-	{
-		return navigationGraph;
-	}
+	public static PathLightPlugin getInstance()	{ return instance; }
+	public DataManager getDataManager()			{ return dataManager; }
+	public NavigationGraph getNavigationGraph()	{ return navigationGraph; }
+	public AStarPathfinder getPathfinder()		{ return pathfinder; }
 
 }
