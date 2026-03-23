@@ -3,6 +3,7 @@ package io.github.fabrielg.pathlight;
 import io.github.fabrielg.pathlight.data.DataManager;
 import io.github.fabrielg.pathlight.graph.AStarPathfinder;
 import io.github.fabrielg.pathlight.graph.NavigationGraph;
+import io.github.fabrielg.pathlight.rendering.TrailManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PathLightPlugin extends JavaPlugin {
@@ -11,6 +12,7 @@ public class PathLightPlugin extends JavaPlugin {
 	private DataManager dataManager;
 	private NavigationGraph navigationGraph;
 	private AStarPathfinder pathfinder;
+	private TrailManager trailManager;
 
 	@Override
 	public void onEnable()
@@ -29,6 +31,8 @@ public class PathLightPlugin extends JavaPlugin {
 
 		this.pathfinder = new AStarPathfinder(navigationGraph);
 
+		this.trailManager = new TrailManager(this, navigationGraph);
+
 		getLogger().info("PathLight enabled successfully.");
 	}
 
@@ -44,5 +48,6 @@ public class PathLightPlugin extends JavaPlugin {
 	public DataManager getDataManager()			{ return dataManager; }
 	public NavigationGraph getNavigationGraph()	{ return navigationGraph; }
 	public AStarPathfinder getPathfinder()		{ return pathfinder; }
+	public TrailManager getTrailManager()		{ return trailManager; }
 
 }
