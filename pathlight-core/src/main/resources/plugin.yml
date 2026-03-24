@@ -1,0 +1,28 @@
+name: PathLight
+version: 1.0-SNAPSHOT
+main: io.github.fabrielg.pathlight.PathLightPlugin
+api-version: "1.21"
+description: A navigation graph plugin for Minecraft servers
+author: Fabrielg
+
+commands:
+  path:
+    description: Navigate to a location
+    usage: /path <location> | /path cancel
+    permission: pathlight.use
+  pathlight:
+    description: PathLight admin commands
+    usage: /pathlight reload
+    permission: pathlight.admin
+  pathtool:
+    description: Gives the navigation editor tool
+    usage: /pathtool
+    permission: pathlight.admin
+
+permissions:
+  pathlight.use:
+    description: Allows using the /path command
+    default: true
+  pathlight.admin:
+    description: Allows editing the navigation graph
+    default: op
