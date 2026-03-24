@@ -14,6 +14,10 @@ commands:
     description: PathLight admin commands
     usage: /pathlight reload
     permission: pathlight.admin
+  pathtool:
+    description: Gives the navigation editor tool
+    usage: /pathtool
+    permission: pathlight.admin
 
 permissions:
   pathlight.use:

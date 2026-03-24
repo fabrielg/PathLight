@@ -1,8 +1,10 @@
 package io.github.fabrielg.pathlight;
 
+import io.github.fabrielg.pathlight.commands.NavToolCommand;
 import io.github.fabrielg.pathlight.commands.PathCommand;
 import io.github.fabrielg.pathlight.commands.PathLightCommand;
 import io.github.fabrielg.pathlight.data.DataManager;
+import io.github.fabrielg.pathlight.editor.NavTool;
 import io.github.fabrielg.pathlight.graph.AStarPathfinder;
 import io.github.fabrielg.pathlight.graph.NavigationGraph;
 import io.github.fabrielg.pathlight.rendering.TrailManager;
@@ -15,6 +17,7 @@ public class PathLightPlugin extends JavaPlugin {
 	private NavigationGraph navigationGraph;
 	private AStarPathfinder pathfinder;
 	private TrailManager trailManager;
+	private NavTool navTool;
 
 	@Override
 	public void onEnable()
@@ -35,6 +38,9 @@ public class PathLightPlugin extends JavaPlugin {
 
 		this.trailManager = new TrailManager(this, navigationGraph);
 
+		this.navTool = new NavTool(this);
+		getServer().getPluginManager().registerEvents(navTool, this);
+
 		PathCommand pathCommand = new PathCommand(this);
 		getCommand("path").setExecutor(pathCommand);
 		getCommand("path").setTabCompleter(pathCommand);
@@ -42,6 +48,8 @@ public class PathLightPlugin extends JavaPlugin {
 		PathLightCommand pathLightCommand = new PathLightCommand(this);
 		getCommand("pathlight").setExecutor(pathLightCommand);
 		getCommand("pathlight").setTabCompleter(pathLightCommand);
+
+		getCommand("pathtool").setExecutor(new NavToolCommand(this));
 
 		getLogger().info("PathLight enabled successfully.");
 	}
@@ -59,5 +67,6 @@ public class PathLightPlugin extends JavaPlugin {
 	public NavigationGraph getNavigationGraph()	{ return navigationGraph; }
 	public AStarPathfinder getPathfinder()		{ return pathfinder; }
 	public TrailManager getTrailManager()		{ return trailManager; }
+	public NavTool getNavTool()					{ return navTool; }
 
 }
