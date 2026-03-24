@@ -94,4 +94,47 @@ public class ParticleRenderer {
 				dust
 		);
 	}
+
+	/**
+	 * Renders a real-time line from the player's current position
+	 * to the next waypoint on the path.
+	 * This shows the player where to go even if they are far from the path.
+	 */
+	public void renderPlayerToPath(Player player, List<Integer> path, int fromIndex, Color color) {
+		if (path == null || path.isEmpty()) return;
+		if (fromIndex >= path.size()) return;
+
+		Waypoint nextOnPath = graph.getWaypoint(path.get(fromIndex));
+		if (nextOnPath == null) return;
+
+		World world = player.getServer().getWorld(nextOnPath.getWorld());
+		if (world == null) return;
+
+		double px = player.getLocation().getX();
+		double py = player.getLocation().getY() + 0.1;
+		double pz = player.getLocation().getZ();
+
+		double tx = nextOnPath.getX();
+		double ty = nextOnPath.getY() + 0.1;
+		double tz = nextOnPath.getZ();
+
+		double dx = tx - px;
+		double dy = ty - py;
+		double dz = tz - pz;
+		double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+		if (distance == 0) return;
+
+		int count = (int) Math.ceil(distance / PARTICLE_SPACING);
+		Particle.DustOptions dust = new Particle.DustOptions(color, 1.0f);
+
+		for (int i = 0; i <= count; i++) {
+			double t = (double) i / count;
+			player.spawnParticle(
+					Particle.DUST,
+					new org.bukkit.Location(world, px + t * dx, py + t * dy, pz + t * dz),
+					1, 0, 0, 0, dust
+			);
+		}
+	}
 }

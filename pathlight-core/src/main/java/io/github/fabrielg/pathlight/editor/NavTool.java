@@ -5,8 +5,11 @@ import io.github.fabrielg.pathlight.api.Edge;
 import io.github.fabrielg.pathlight.api.NavLocation;
 import io.github.fabrielg.pathlight.api.Waypoint;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.*;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,19 +23,12 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 
-/**
- * The in-game navigation editor tool (custom stick).
- * Allows admins to place/remove waypoints, create/delete edges,
- * and define named locations directly in the world.
- */
 public class NavTool implements Listener {
 
 	private static final NamespacedKey TOOL_KEY = new NamespacedKey("pathlight", "nav_tool");
-
 	private static final double WAYPOINT_CLICK_RADIUS = 3.0;
 
 	private final PathLightPlugin plugin;
-
 	private final Map<UUID, EditorSession> sessions = new HashMap<>();
 
 	public NavTool(PathLightPlugin plugin) {
@@ -40,29 +36,20 @@ public class NavTool implements Listener {
 		startVisualizationLoop();
 	}
 
-	/**
-	 * Creates and returns the NavTool item.
-	 * Call this to give the tool to an admin.
-	 */
 	public ItemStack createToolItem() {
 		ItemStack item = new ItemStack(Material.BLAZE_ROD);
 		ItemMeta meta = item.getItemMeta();
-
 		meta.displayName(Component.text("§6§lNavigation Editor"));
 		meta.lore(List.of(
-				Component.text("§7Right click in air to change mode"),
-				Component.text("§7Current mode shown in action bar")
+				Component.text("§7Right click          → change mode"),
+				Component.text("§7Left click           → place / select"),
+				Component.text("§7Shift + Left click   → delete")
 		));
-
 		meta.getPersistentDataContainer().set(TOOL_KEY, PersistentDataType.BYTE, (byte) 1);
 		item.setItemMeta(meta);
-
 		return item;
 	}
 
-	/**
-	 * Returns true if the given item is the NavTool.
-	 */
 	public boolean isNavTool(ItemStack item) {
 		if (item == null || !item.hasItemMeta()) return false;
 		return item.getItemMeta()
@@ -82,20 +69,10 @@ public class NavTool implements Listener {
 
 		EditorSession session = getOrCreateSession(player);
 		Action action = event.getAction();
+		boolean isSneaking = player.isSneaking();
 
-		if (action == Action.RIGHT_CLICK_AIR) {
+		if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
 			cycleMode(player, session);
-			return;
-		}
-
-		if (action == Action.RIGHT_CLICK_BLOCK) {
-			Waypoint nearby = getNearbyWaypoint(player.getLocation(), player.getWorld().getName());
-
-			if (nearby != null) {
-				handleRightClickWaypoint(player, session, nearby);
-			} else {
-				cycleMode(player, session);
-			}
 			return;
 		}
 
@@ -103,30 +80,35 @@ public class NavTool implements Listener {
 			Location clickedLoc = event.getClickedBlock().getLocation().add(0.5, 1.0, 0.5);
 			Waypoint nearby = getNearbyWaypoint(clickedLoc, player.getWorld().getName());
 
-			handleLeftClick(player, session, clickedLoc, nearby);
+			if (isSneaking) {
+				handleDelete(player, session, nearby);
+			} else {
+				handleLeftClick(player, session, clickedLoc, nearby);
+			}
+		}
+
+		if (action == Action.LEFT_CLICK_AIR && isSneaking) {
+			session.clearSelection();
+			player.sendMessage("§7Selection cleared.");
 		}
 	}
 
 	@EventHandler
 	public void onItemHeld(PlayerItemHeldEvent event) {
 		Player player = event.getPlayer();
-
 		new BukkitRunnable() {
 			@Override
 			public void run() {
 				ItemStack item = player.getInventory().getItemInMainHand();
 				if (!isNavTool(item)) return;
 				if (!player.hasPermission("pathlight.admin")) return;
-
-				EditorSession session = getOrCreateSession(player);
-				showActionBar(player, session);
+				showActionBar(player, getOrCreateSession(player));
 			}
 		}.runTaskLater(plugin, 1L);
 	}
 
 	private void handleLeftClick(Player player, EditorSession session, Location loc, Waypoint nearby) {
 		switch (session.getMode()) {
-
 			case WAYPOINT -> {
 				if (nearby != null) {
 					player.sendMessage("§eWaypoint §f#" + nearby.getId() + " §ealready exists here.");
@@ -134,18 +116,16 @@ public class NavTool implements Listener {
 				}
 				placeWaypoint(player, loc);
 			}
-
 			case EDGE -> {
 				if (nearby == null) {
-					player.sendMessage("§cNo waypoint found here. Click closer to a waypoint.");
+					player.sendMessage("§cNo waypoint here. Click closer to an existing waypoint.");
 					return;
 				}
 				handleEdgeClick(player, session, nearby);
 			}
-
 			case LOCATION -> {
 				if (nearby == null) {
-					player.sendMessage("§cNo waypoint found here. Click on an existing waypoint.");
+					player.sendMessage("§cNo waypoint here. Click on an existing waypoint.");
 					return;
 				}
 				promptLocationName(player, nearby);
@@ -153,25 +133,26 @@ public class NavTool implements Listener {
 		}
 	}
 
-	private void handleRightClickWaypoint(Player player, EditorSession session, Waypoint waypoint) {
+	/**
+	 * Shift + left click → delete base on active mode.
+	 */
+	private void handleDelete(Player player, EditorSession session, Waypoint nearby) {
+		if (nearby == null) {
+			player.sendMessage("§cNo waypoint nearby to delete.");
+			return;
+		}
+
 		switch (session.getMode()) {
-
-			case WAYPOINT -> removeWaypoint(player, waypoint);
-
-			case EDGE -> {
-				removeAllEdges(player, waypoint);
-				session.clearSelection();
-			}
-
-			case LOCATION -> {
-				removeLocationOnWaypoint(player, waypoint);
-			}
+			case WAYPOINT  -> removeWaypoint(player, nearby);
+			case EDGE      -> { removeAllEdges(player, nearby); session.clearSelection(); }
+			case LOCATION  -> removeLocationOnWaypoint(player, nearby);
 		}
 	}
 
 	private void placeWaypoint(Player player, Location loc) {
 		int id = plugin.getDataManager().nextWaypointId();
-		Waypoint wp = new Waypoint(id, loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
+		Waypoint wp = new Waypoint(id, loc.getWorld().getName(),
+				loc.getX(), loc.getY(), loc.getZ());
 
 		plugin.getDataManager().addWaypoint(wp);
 		plugin.getNavigationGraph().addWaypoint(wp);
@@ -191,13 +172,14 @@ public class NavTool implements Listener {
 		plugin.getDataManager().removeWaypoint(waypoint.getId());
 		plugin.getDataManager().save();
 
-		player.sendMessage("§cWaypoint §f#" + waypoint.getId() + " §cremoved.");
+		player.sendMessage("§cWaypoint §f#" + waypoint.getId() + " §cand its edges removed.");
 	}
 
 	private void handleEdgeClick(Player player, EditorSession session, Waypoint clicked) {
 		if (!session.hasSelection()) {
 			session.setSelectedWaypointId(clicked.getId());
-			player.sendMessage("§bWaypoint §f#" + clicked.getId() + " §bselected. Now click a second waypoint.");
+			player.sendMessage("§bWaypoint §f#" + clicked.getId()
+					+ " §bselected. Click a second waypoint to connect.");
 			return;
 		}
 
@@ -225,42 +207,38 @@ public class NavTool implements Listener {
 		plugin.getNavigationGraph().addEdge(edge);
 		plugin.getDataManager().save();
 
-		player.sendMessage("§aEdge created between §f#" + fromId + " §aand §f#" + toId);
+		player.sendMessage("§aEdge created: §f#" + fromId + " §a↔ §f#" + toId);
 	}
 
 	private void removeAllEdges(Player player, Waypoint waypoint) {
 		int id = waypoint.getId();
 		long count = plugin.getDataManager().getEdges().stream()
-				.filter(e -> e.getFromId() == id || e.getToId() == id)
-				.count();
+				.filter(e -> e.getFromId() == id || e.getToId() == id).count();
 
 		plugin.getDataManager().getEdges().removeIf(e ->
 				e.getFromId() == id || e.getToId() == id
 		);
 		plugin.getNavigationGraph().removeWaypoint(id);
-		plugin.getNavigationGraph().addWaypoint(waypoint); // réajoute sans liaisons
+		plugin.getNavigationGraph().addWaypoint(waypoint);
 		plugin.getDataManager().save();
 
 		player.sendMessage("§cRemoved §f" + count + " §cedge(s) from waypoint §f#" + id);
 	}
 
 	private void promptLocationName(Player player, Waypoint anchor) {
-		player.sendMessage("§dType the name of this destination in chat. Type §fcancel §dto abort.");
-
+		player.sendMessage("§dType the destination name in chat. Type §fcancel §dto abort.");
 		plugin.getServer().getPluginManager().registerEvents(
 				new ChatInputListener(plugin, player, input -> {
 					if (input.equalsIgnoreCase("cancel")) {
 						player.sendMessage("§7Cancelled.");
 						return;
 					}
-
 					int id = plugin.getDataManager().nextLocationId();
 					NavLocation location = new NavLocation(id, input, anchor.getId());
-
 					plugin.getDataManager().addLocation(location);
 					plugin.getDataManager().save();
-
-					player.sendMessage("§dLocation §f\"" + input + "\" §dcreated on waypoint §f#" + anchor.getId());
+					player.sendMessage("§dLocation §f\"" + input
+							+ "\" §dcreated on waypoint §f#" + anchor.getId());
 				}),
 				plugin
 		);
@@ -272,19 +250,14 @@ public class NavTool implements Listener {
 				.findFirst();
 
 		if (found.isEmpty()) {
-			player.sendMessage("§eNo location is anchored on waypoint §f#" + waypoint.getId());
+			player.sendMessage("§eNo location anchored on waypoint §f#" + waypoint.getId());
 			return;
 		}
-
 		plugin.getDataManager().removeLocation(found.get().getId());
 		plugin.getDataManager().save();
 		player.sendMessage("§cLocation §f\"" + found.get().getName() + "\" §cremoved.");
 	}
 
-	/**
-	 * Repeating task that shows waypoints and edges as particles
-	 * to any admin holding the NavTool.
-	 */
 	private void startVisualizationLoop() {
 		new BukkitRunnable() {
 			@Override
@@ -292,7 +265,6 @@ public class NavTool implements Listener {
 				for (Player player : plugin.getServer().getOnlinePlayers()) {
 					if (!isNavTool(player.getInventory().getItemInMainHand())) continue;
 					if (!player.hasPermission("pathlight.admin")) continue;
-
 					renderEditorParticles(player);
 					showActionBar(player, getOrCreateSession(player));
 				}
@@ -324,7 +296,6 @@ public class NavTool implements Listener {
 			Waypoint to   = plugin.getDataManager().getWaypoints().get(edge.getToId());
 			if (from == null || to == null) continue;
 			if (!from.getWorld().equals(world)) continue;
-
 			renderEdgeLine(player, from, to);
 		}
 	}
@@ -349,15 +320,16 @@ public class NavTool implements Listener {
 		session.setMode(session.getMode().next());
 		session.clearSelection();
 		showActionBar(player, session);
-		player.sendMessage(session.getMode().getDisplayName() + " §7activated. " + session.getMode().getHint());
+		player.sendMessage(session.getMode().getDisplayName()
+				+ " §7— " + session.getMode().getHint());
 	}
 
 	private void showActionBar(Player player, EditorSession session) {
-		String selectionInfo = session.hasSelection()
-				? " §7| Selected: §f#" + session.getSelectedWaypointId()
-				: "";
+		String sel = session.hasSelection()
+				? " §7| Selected: §f#" + session.getSelectedWaypointId() : "";
 		player.sendActionBar(Component.text(
-				session.getMode().getDisplayName() + selectionInfo
+				session.getMode().getDisplayName() + sel
+						+ " §7| §fShift+LClick §7to delete"
 		));
 	}
 
@@ -367,18 +339,12 @@ public class NavTool implements Listener {
 
 		for (Waypoint wp : plugin.getDataManager().getWaypoints().values()) {
 			if (!wp.getWorld().equals(world)) continue;
-
 			double dx = wp.getX() - loc.getX();
 			double dy = wp.getY() - loc.getY();
 			double dz = wp.getZ() - loc.getZ();
 			double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-			if (dist < minDist) {
-				minDist = dist;
-				closest = wp;
-			}
+			if (dist < minDist) { minDist = dist; closest = wp; }
 		}
-
 		return closest;
 	}
 

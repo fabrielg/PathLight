@@ -3,22 +3,17 @@ package io.github.fabrielg.pathlight.rendering;
 import io.github.fabrielg.pathlight.PathLightPlugin;
 import io.github.fabrielg.pathlight.api.Waypoint;
 import io.github.fabrielg.pathlight.graph.NavigationGraph;
+import org.bukkit.Color;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-/**
- * Manages active trails for all players.
- * Refreshes particle rendering in real-time and advances
- * the trail start as the player moves forward.
- */
 public class TrailManager {
-	private static final long REFRESH_INTERVAL_TICKS = 10L; // 10 ticks
-	private static final double WAYPOINT_REACHED_DISTANCE = 4.0;
+
+	private static final long REFRESH_INTERVAL_TICKS = 10L;
+
+	private static final double OFF_PATH_THRESHOLD = 8.0;
 
 	private final PathLightPlugin plugin;
 	private final NavigationGraph graph;
@@ -27,33 +22,21 @@ public class TrailManager {
 	private final Map<UUID, ActiveTrail> activeTrails = new HashMap<>();
 
 	public TrailManager(PathLightPlugin plugin, NavigationGraph graph) {
-		this.plugin		= plugin;
-		this.graph		= graph;
-		this.renderer	= new ParticleRenderer(graph);
-
+		this.plugin   = plugin;
+		this.graph    = graph;
+		this.renderer = new ParticleRenderer(graph);
 		startRenderLoop();
 	}
 
 	/* API */
-
-	/**
-	 * Starts a trail for the given player toward the given path.
-	 * Replaces any existing trail for that player.
-	 */
-	public void startTrail(Player player, List<Integer> path) {
-		activeTrails.put(player.getUniqueId(), new ActiveTrail(path));
+	public void startTrail(Player player, List<Integer> path, int destinationId) {
+		activeTrails.put(player.getUniqueId(), new ActiveTrail(path, destinationId));
 	}
 
-	/**
-	 * Cancels and removes the active trail for the given player.
-	 */
 	public void stopTrail(Player player) {
 		activeTrails.remove(player.getUniqueId());
 	}
 
-	/**
-	 * Returns true if the player currently has an active trail.
-	 */
 	public boolean hasTrail(Player player) {
 		return activeTrails.containsKey(player.getUniqueId());
 	}
@@ -68,10 +51,9 @@ public class TrailManager {
 			@Override
 			public void run() {
 				for (Map.Entry<UUID, ActiveTrail> entry : Map.copyOf(activeTrails).entrySet()) {
-					UUID uuid  = entry.getKey();
+					UUID uuid        = entry.getKey();
 					ActiveTrail trail = entry.getValue();
-
-					Player player = plugin.getServer().getPlayer(uuid);
+					Player player    = plugin.getServer().getPlayer(uuid);
 
 					if (player == null || !player.isOnline()) {
 						activeTrails.remove(uuid);
@@ -80,59 +62,127 @@ public class TrailManager {
 
 					updateTrailIndex(player, trail);
 
+					if (isOffPath(player, trail)) {
+						boolean recalculated = recalculatePath(player, trail);
+						if (!recalculated) {
+							player.sendMessage("§cCannot find a path from your position.");
+							activeTrails.remove(uuid);
+							continue;
+						}
+					}
+
 					if (trail.isComplete()) {
 						activeTrails.remove(uuid);
 						player.sendMessage("§aYou have reached your destination!");
 						continue;
 					}
 
-					renderer.render(player, trail.getPath(), trail.getCurrentIndex());
+					renderer.render(player, trail.getPath(), trail.getCurrentIndex(),
+							Color.fromRGB(255, 140, 0));
+
+					renderer.renderPlayerToPath(player, trail.getPath(),
+							trail.getCurrentIndex(), Color.fromRGB(255, 200, 50));
 				}
 			}
 		}.runTaskTimer(plugin, 0L, REFRESH_INTERVAL_TICKS);
 	}
 
 	/**
-	 * Advances the trail's start index based on the player's current position.
-	 * When the player is close enough to the next waypoint, we move forward.
+	 * Finds the closest waypoint on the path to the player
+	 * and jumps directly to that index.
+	 * This handles shortcuts naturally : if the player skips
+	 * ahead, the index advances automatically.
 	 */
 	private void updateTrailIndex(Player player, ActiveTrail trail) {
 		List<Integer> path = trail.getPath();
 		int currentIndex   = trail.getCurrentIndex();
 
-		while (currentIndex < path.size() - 1) {
-			Waypoint next = graph.getWaypoint(path.get(currentIndex + 1));
-			if (next == null) break;
+		double minDist     = Double.MAX_VALUE;
+		int bestIndex      = currentIndex;
 
-			double dx = player.getLocation().getX() - next.getX();
-			double dy = player.getLocation().getY() - next.getY();
-			double dz = player.getLocation().getZ() - next.getZ();
-			double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+		for (int i = currentIndex; i < path.size(); i++) {
+			Waypoint wp = graph.getWaypoint(path.get(i));
+			if (wp == null) continue;
 
-			if (distance <= WAYPOINT_REACHED_DISTANCE) {
-				currentIndex++;
-				trail.setCurrentIndex(currentIndex);
-			} else {
-				break;
+			double dist = distanceTo(player, wp);
+			if (dist < minDist) {
+				minDist   = dist;
+				bestIndex = i;
 			}
 		}
+
+		trail.setCurrentIndex(bestIndex);
 	}
 
 	/**
-	 * Represents the state of an active trail for one player.
+	 * Returns true if the player's closest waypoint in the entire graph
+	 * is not on the current path (player went off-route).
 	 */
-	private static class ActiveTrail {
-		private final List<Integer> path;
-		private int currentIndex = 0;
+	private boolean isOffPath(Player player, ActiveTrail trail) {
+		Waypoint closestInGraph = graph.getClosestWaypoint(
+				player.getWorld().getName(),
+				player.getLocation().getX(),
+				player.getLocation().getY(),
+				player.getLocation().getZ()
+		);
 
-		ActiveTrail(List<Integer> path) {
-			this.path = path;
-		}
+		if (closestInGraph == null) return false;
 
-		public List<Integer> getPath()        { return path; }
-		public int getCurrentIndex()          { return currentIndex; }
-		public void setCurrentIndex(int idx)  { this.currentIndex = idx; }
-		public boolean isComplete()           { return currentIndex >= path.size() - 1; }
+		if (trail.getPath().contains(closestInGraph.getId())) return false;
+
+		double dist = distanceTo(player, closestInGraph);
+		return dist < OFF_PATH_THRESHOLD;
 	}
 
+	/**
+	 * Recalculates the path from the player's current position
+	 * to the original destination.
+	 * Returns true if a new path was found.
+	 */
+	private boolean recalculatePath(Player player, ActiveTrail trail) {
+		Waypoint closestToPlayer = graph.getClosestWaypoint(
+				player.getWorld().getName(),
+				player.getLocation().getX(),
+				player.getLocation().getY(),
+				player.getLocation().getZ()
+		);
+
+		if (closestToPlayer == null) return false;
+
+		List<Integer> newPath = plugin.getPathfinder().findPath(
+				closestToPlayer.getId(),
+				trail.getDestinationWaypointId()
+		);
+
+		if (newPath.isEmpty()) return false;
+
+		trail.setPath(newPath);
+		trail.setCurrentIndex(0);
+		return true;
+	}
+
+	private double distanceTo(Player player, Waypoint wp) {
+		double dx = player.getLocation().getX() - wp.getX();
+		double dy = player.getLocation().getY() - wp.getY();
+		double dz = player.getLocation().getZ() - wp.getZ();
+		return Math.sqrt(dx * dx + dy * dy + dz * dz);
+	}
+
+	private static class ActiveTrail {
+		private List<Integer> path;
+		private int currentIndex = 0;
+		private final int destinationWaypointId;
+
+		ActiveTrail(List<Integer> path, int destinationWaypointId) {
+			this.path                  = path;
+			this.destinationWaypointId = destinationWaypointId;
+		}
+
+		public List<Integer> getPath()                   { return path; }
+		public void setPath(List<Integer> path)          { this.path = path; }
+		public int getCurrentIndex()                     { return currentIndex; }
+		public void setCurrentIndex(int idx)             { this.currentIndex = idx; }
+		public int getDestinationWaypointId()            { return destinationWaypointId; }
+		public boolean isComplete()                      { return currentIndex >= path.size() - 1; }
+	}
 }
