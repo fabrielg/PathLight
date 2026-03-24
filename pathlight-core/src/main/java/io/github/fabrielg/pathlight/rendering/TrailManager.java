@@ -11,10 +11,6 @@ import java.util.*;
 
 public class TrailManager {
 
-	private static final long REFRESH_INTERVAL_TICKS = 10L;
-
-	private static final double OFF_PATH_THRESHOLD = 8.0;
-
 	private final PathLightPlugin plugin;
 	private final NavigationGraph graph;
 	private final ParticleRenderer renderer;
@@ -81,10 +77,10 @@ public class TrailManager {
 							Color.fromRGB(255, 140, 0));
 
 					renderer.renderPlayerToPath(player, trail.getPath(),
-							trail.getCurrentIndex(), Color.fromRGB(255, 200, 50));
+							trail.getCurrentIndex(), plugin.getPluginConfig().getPlayerLineColor());
 				}
 			}
-		}.runTaskTimer(plugin, 0L, REFRESH_INTERVAL_TICKS);
+		}.runTaskTimer(plugin, 0L, plugin.getPluginConfig().getRefreshInterval());
 	}
 
 	/**
@@ -131,7 +127,7 @@ public class TrailManager {
 		if (trail.getPath().contains(closestInGraph.getId())) return false;
 
 		double dist = distanceTo(player, closestInGraph);
-		return dist < OFF_PATH_THRESHOLD;
+		return dist < plugin.getPluginConfig().getOffPathThreshold();
 	}
 
 	/**

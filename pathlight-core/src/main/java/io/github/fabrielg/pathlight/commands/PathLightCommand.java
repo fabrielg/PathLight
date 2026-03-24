@@ -5,7 +5,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -37,6 +36,7 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 		if (args[0].equalsIgnoreCase("reload")) {
 			sender.sendMessage("§7Reloading PathLight data...");
 
+			plugin.getPluginConfig().load();
 			plugin.getDataManager().load();
 			plugin.getNavigationGraph().build();
 

@@ -1,0 +1,40 @@
+# ╔══════════════════════════════════════╗
+# ║        PathLight Configuration       ║
+# ╚══════════════════════════════════════╝
+
+# Particle renderer
+particles:
+  # Block spacing between each particle along the path (smaller = denser)
+  spacing: 0.5
+
+  # Height above ground (in blocks)
+  height-offset: 0.1
+
+  # Main trail color (RGB format)
+  trail-color: "255,140,0"
+
+  # Player line color → next waypoint
+  player-line-color: "255,200,50"
+
+  # Particle size (1.0 = normal)
+  size: 1.0
+
+# Navigation
+navigation:
+  # Trail refresh interval in ticks (20 ticks = 1 second)
+  refresh-interval: 10
+
+  # The number of blocks beyond which the player is considered “off-path”
+  # and a new path is recalculated
+  off-path-threshold: 8.0
+
+# Editor (NavTool)
+editor:
+  # A block-based radius in which a click detects an existing waypoint
+  waypoint-click-radius: 3.0
+
+  # Spacing between particles used to visualize bonds
+  edge-particle-spacing: 1.5
+
+  # Display refresh interval in ticks
+  visualization-interval: 10

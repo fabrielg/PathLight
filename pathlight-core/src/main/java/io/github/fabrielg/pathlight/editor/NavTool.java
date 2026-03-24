@@ -26,7 +26,6 @@ import java.util.*;
 public class NavTool implements Listener {
 
 	private static final NamespacedKey TOOL_KEY = new NamespacedKey("pathlight", "nav_tool");
-	private static final double WAYPOINT_CLICK_RADIUS = 3.0;
 
 	private final PathLightPlugin plugin;
 	private final Map<UUID, EditorSession> sessions = new HashMap<>();
@@ -269,7 +268,7 @@ public class NavTool implements Listener {
 					showActionBar(player, getOrCreateSession(player));
 				}
 			}
-		}.runTaskTimer(plugin, 0L, 10L);
+		}.runTaskTimer(plugin, 0L, plugin.getPluginConfig().getVisualizationInterval());
 	}
 
 	private void renderEditorParticles(Player player) {
@@ -302,7 +301,7 @@ public class NavTool implements Listener {
 
 	private void renderEdgeLine(Player player, Waypoint from, Waypoint to) {
 		double distance = from.distanceTo(to);
-		int steps = (int) Math.ceil(distance / 1.5);
+		int steps = (int) Math.ceil(distance / plugin.getPluginConfig().getEdgeParticleSpacing());
 
 		for (int i = 0; i <= steps; i++) {
 			double t = (double) i / steps;
@@ -335,7 +334,7 @@ public class NavTool implements Listener {
 
 	private Waypoint getNearbyWaypoint(Location loc, String world) {
 		Waypoint closest = null;
-		double minDist = WAYPOINT_CLICK_RADIUS;
+		double minDist = plugin.getPluginConfig().getWaypointClickRadius();
 
 		for (Waypoint wp : plugin.getDataManager().getWaypoints().values()) {
 			if (!wp.getWorld().equals(world)) continue;
