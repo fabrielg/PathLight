@@ -19,6 +19,20 @@ particles:
   # Particle size (1.0 = normal)
   size: 1.0
 
+  # Path rendering style
+  # LINEAR      → straight lines between each waypoint
+  # CATMULL_ROM → smooth curve passing through all waypoints
+  trail-style: CATMULL_ROM
+
+  # Catmull-Rom curve tension (0.5 = standard)
+  # Recommended values: between 0.3 and 0.7
+  catmull-tension: 0.5
+
+  # Number of interpolated points per segment (between two waypoints)
+  # Higher = smoother curve but more particles
+  # Recommended values: between 8 and 20
+  catmull-samples-per-segment: 12
+
 # Navigation
 navigation:
   # Trail refresh interval in ticks (20 ticks = 1 second)
