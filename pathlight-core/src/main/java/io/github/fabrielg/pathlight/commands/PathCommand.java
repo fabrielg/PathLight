@@ -89,7 +89,7 @@ public class PathCommand implements CommandExecutor, TabCompleter {
 			return true;
 		}
 
-		plugin.getTrailManager().startTrail(player, path, anchorWaypoint.getId());
+		plugin.getTrailManager().startTrail(player, path, targetLocation);
 		player.sendMessage("§aNavigating to §e" + targetLocation.getName() + "§a. Follow the trail!");
 		player.sendMessage("§7Type §f/path cancel §7to stop navigation.");
 
