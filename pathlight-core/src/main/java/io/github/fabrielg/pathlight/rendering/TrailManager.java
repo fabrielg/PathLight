@@ -8,12 +8,14 @@ import io.github.fabrielg.pathlight.api.event.PathRecalculateEvent;
 import io.github.fabrielg.pathlight.graph.NavigationGraph;
 import org.bukkit.Color;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 
-public class TrailManager {
+public class TrailManager implements Listener {
 
 	private final PathLightPlugin plugin;
 	private final NavigationGraph graph;
@@ -168,10 +170,26 @@ public class TrailManager {
 
 		NavLocation dest = plugin.getNavigationGraph().getLocation(trail.getDestinationWaypointId());
 		PathRecalculateEvent event = new PathRecalculateEvent(player, dest, trail.getPath(), newPath);
+		plugin.getServer().getPluginManager().callEvent(event);
 
 		trail.setPath(newPath);
 		trail.setCurrentIndex(0);
 		return true;
+	}
+
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent event) {
+		Player player = event.getPlayer();
+		ActiveTrail trail = activeTrails.remove(player.getUniqueId());
+
+		if (trail != null) {
+			NavLocation dest = plugin.getNavigationGraph()
+					.getLocation(trail.getDestinationWaypointId());
+			PathEndEvent endEvent = new PathEndEvent(
+					player, dest, PathEndEvent.Reason.DISCONNECTED
+			);
+			plugin.getServer().getPluginManager().callEvent(endEvent);
+		}
 	}
 
 	private double distanceTo(Player player, Waypoint wp) {

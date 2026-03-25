@@ -42,6 +42,7 @@ public class PathLightPlugin extends JavaPlugin {
 		this.pathfinder = new AStarPathfinder(navigationGraph);
 
 		this.trailManager = new TrailManager(this, navigationGraph);
+		getServer().getPluginManager().registerEvents(trailManager, this);
 
 		this.navTool = new NavTool(this);
 		getServer().getPluginManager().registerEvents(navTool, this);
