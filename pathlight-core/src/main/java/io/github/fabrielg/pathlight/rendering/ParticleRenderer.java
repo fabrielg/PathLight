@@ -1,6 +1,8 @@
 package io.github.fabrielg.pathlight.rendering;
 
+import io.github.fabrielg.pathlight.PathLightPlugin;
 import io.github.fabrielg.pathlight.api.Waypoint;
+import io.github.fabrielg.pathlight.config.PluginConfig;
 import io.github.fabrielg.pathlight.graph.NavigationGraph;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -16,14 +18,12 @@ import java.util.List;
  */
 public class ParticleRenderer {
 
-	private static final double PARTICLE_SPACING = 0.5;
-	private static final double HEIGHT_OFFSET = 0.1;
-	private static final Color DEFAULT_COLOR = Color.fromRGB(255, 223, 0);
-
 	private final NavigationGraph graph;
+	private final PluginConfig config;
 
 	public ParticleRenderer(NavigationGraph graph) {
 		this.graph = graph;
+		this.config = PathLightPlugin.getInstance().getPluginConfig();
 	}
 
 	/**
@@ -35,7 +35,7 @@ public class ParticleRenderer {
 	 * @param fromIndex the index in the path from which to start rendering
 	 */
 	public void render(Player player, List<Integer> path, int fromIndex) {
-		render(player, path, fromIndex, DEFAULT_COLOR);
+		render(player, path, fromIndex, config.getTrailColor());
 	}
 
 	/**
@@ -63,13 +63,13 @@ public class ParticleRenderer {
 		double distance = from.distanceTo(to);
 		if (distance == 0) return;
 
-		int count = (int) Math.ceil(distance / PARTICLE_SPACING);
+		int count = (int) Math.ceil(distance / config.getParticleSpacing());
 
 		for (int i = 0; i <= count; i++) {
 			double t = (double) i / count;
 
 			double x = from.getX() + t * (to.getX() - from.getX());
-			double y = from.getY() + t * (to.getY() - from.getY()) + HEIGHT_OFFSET;
+			double y = from.getY() + t * (to.getY() - from.getY()) + config.getHeightOffset();
 			double z = from.getZ() + t * (to.getZ() - from.getZ());
 
 			spawnParticle(player, from.getWorld(), x, y, z, color);
@@ -89,7 +89,7 @@ public class ParticleRenderer {
 		player.spawnParticle(
 				Particle.DUST,
 				new Location(world, x, y, z),
-				1,
+				(int)config.getParticleSize(),
 				0, 0, 0,
 				dust
 		);
@@ -125,15 +125,16 @@ public class ParticleRenderer {
 
 		if (distance == 0) return;
 
-		int count = (int) Math.ceil(distance / PARTICLE_SPACING);
+		int count = (int) Math.ceil(distance / config.getParticleSpacing());
 		Particle.DustOptions dust = new Particle.DustOptions(color, 1.0f);
 
 		for (int i = 0; i <= count; i++) {
 			double t = (double) i / count;
 			player.spawnParticle(
 					Particle.DUST,
-					new org.bukkit.Location(world, px + t * dx, py + t * dy, pz + t * dz),
-					1, 0, 0, 0, dust
+					new Location(world, px + t * dx, py + t * dy, pz + t * dz),
+					(int)config.getParticleSize(),
+					0, 0, 0, dust
 			);
 		}
 	}

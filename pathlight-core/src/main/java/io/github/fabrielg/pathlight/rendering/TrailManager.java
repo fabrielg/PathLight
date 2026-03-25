@@ -1,19 +1,19 @@
 package io.github.fabrielg.pathlight.rendering;
 
 import io.github.fabrielg.pathlight.PathLightPlugin;
+import io.github.fabrielg.pathlight.api.NavLocation;
 import io.github.fabrielg.pathlight.api.Waypoint;
+import io.github.fabrielg.pathlight.api.event.PathEndEvent;
+import io.github.fabrielg.pathlight.api.event.PathRecalculateEvent;
 import io.github.fabrielg.pathlight.graph.NavigationGraph;
 import org.bukkit.Color;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 
 public class TrailManager {
-
-	private static final long REFRESH_INTERVAL_TICKS = 10L;
-
-	private static final double OFF_PATH_THRESHOLD = 8.0;
 
 	private final PathLightPlugin plugin;
 	private final NavigationGraph graph;
@@ -34,7 +34,12 @@ public class TrailManager {
 	}
 
 	public void stopTrail(Player player) {
-		activeTrails.remove(player.getUniqueId());
+		ActiveTrail trail = activeTrails.remove(player.getUniqueId());
+		if (trail != null) {
+			NavLocation dest = plugin.getNavigationGraph().getLocation(trail.getDestinationWaypointId());
+			PathEndEvent event = new PathEndEvent(player, dest, PathEndEvent.Reason.CANCELLED);
+			plugin.getServer().getPluginManager().callEvent(event);
+		}
 	}
 
 	public boolean hasTrail(Player player) {
@@ -73,6 +78,11 @@ public class TrailManager {
 
 					if (trail.isComplete()) {
 						activeTrails.remove(uuid);
+
+						NavLocation dest = plugin.getNavigationGraph().getLocation(trail.getDestinationWaypointId());
+						PathEndEvent event = new PathEndEvent(player, dest, PathEndEvent.Reason.REACHED);
+						plugin.getServer().getPluginManager().callEvent(event);
+
 						player.sendMessage("§aYou have reached your destination!");
 						continue;
 					}
@@ -81,10 +91,10 @@ public class TrailManager {
 							Color.fromRGB(255, 140, 0));
 
 					renderer.renderPlayerToPath(player, trail.getPath(),
-							trail.getCurrentIndex(), Color.fromRGB(255, 200, 50));
+							trail.getCurrentIndex(), plugin.getPluginConfig().getPlayerLineColor());
 				}
 			}
-		}.runTaskTimer(plugin, 0L, REFRESH_INTERVAL_TICKS);
+		}.runTaskTimer(plugin, 0L, plugin.getPluginConfig().getRefreshInterval());
 	}
 
 	/**
@@ -131,7 +141,7 @@ public class TrailManager {
 		if (trail.getPath().contains(closestInGraph.getId())) return false;
 
 		double dist = distanceTo(player, closestInGraph);
-		return dist < OFF_PATH_THRESHOLD;
+		return dist < plugin.getPluginConfig().getOffPathThreshold();
 	}
 
 	/**
@@ -155,6 +165,9 @@ public class TrailManager {
 		);
 
 		if (newPath.isEmpty()) return false;
+
+		NavLocation dest = plugin.getNavigationGraph().getLocation(trail.getDestinationWaypointId());
+		PathRecalculateEvent event = new PathRecalculateEvent(player, dest, trail.getPath(), newPath);
 
 		trail.setPath(newPath);
 		trail.setCurrentIndex(0);
