@@ -18,6 +18,9 @@ public class AStarPathfinder {
 	 * or an empty list if no path exists.
 	 */
 	public List<Integer> findPath(int startId, int goalId) {
+		int iterations = 0;
+		final int MAX_ITERATIONS = 10_000;
+
 		if (startId == goalId)
 			return List.of(startId);
 
@@ -81,6 +84,9 @@ public class AStarPathfinder {
 					double f = tentativeG + heuristic(neighborId, goalId);
 					openSet.add(new Node(neighborId, f));
 				}
+			}
+			if (++iterations > MAX_ITERATIONS) {
+				return Collections.emptyList();
 			}
 		}
 		return Collections.emptyList();

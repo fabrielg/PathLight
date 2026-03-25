@@ -10,7 +10,11 @@ import io.github.fabrielg.pathlight.editor.NavTool;
 import io.github.fabrielg.pathlight.graph.AStarPathfinder;
 import io.github.fabrielg.pathlight.graph.NavigationGraph;
 import io.github.fabrielg.pathlight.rendering.TrailManager;
+import io.github.fabrielg.pathlight.util.GraphValidator;
+import io.github.fabrielg.pathlight.util.ValidationResult;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.List;
 
 public class PathLightPlugin extends JavaPlugin {
 
@@ -35,6 +39,14 @@ public class PathLightPlugin extends JavaPlugin {
 
 		this.dataManager = new DataManager(this);
 		dataManager.load();
+
+		GraphValidator validator = new GraphValidator(dataManager, getLogger());
+		List<ValidationResult> issues = validator.validate();
+
+		if (!issues.isEmpty()) {
+			dataManager.save();
+			getLogger().info(dataManager.getFileName() + " has been cleaned and saved.");
+		}
 
 		this.navigationGraph = new NavigationGraph(dataManager);
 		navigationGraph.build();
