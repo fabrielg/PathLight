@@ -1,5 +1,6 @@
 package io.github.fabrielg.pathlight;
 
+import io.github.fabrielg.pathlight.api.PathLightAPIProvider;
 import io.github.fabrielg.pathlight.commands.NavToolCommand;
 import io.github.fabrielg.pathlight.commands.PathCommand;
 import io.github.fabrielg.pathlight.commands.PathLightCommand;
@@ -55,6 +56,8 @@ public class PathLightPlugin extends JavaPlugin {
 
 		getCommand("pathtool").setExecutor(new NavToolCommand(this));
 
+		PathLightAPIProvider.register(new PathLightAPIImpl(this));
+
 		getLogger().info("PathLight enabled successfully.");
 	}
 
@@ -63,6 +66,9 @@ public class PathLightPlugin extends JavaPlugin {
 	{
 		if (dataManager != null)
 			dataManager.save();
+
+		PathLightAPIProvider.unregister();
+
 		getLogger().info("PathLight disabled.");
 	}
 

@@ -1,10 +1,14 @@
 package io.github.fabrielg.pathlight.rendering;
 
 import io.github.fabrielg.pathlight.PathLightPlugin;
+import io.github.fabrielg.pathlight.api.NavLocation;
 import io.github.fabrielg.pathlight.api.Waypoint;
+import io.github.fabrielg.pathlight.api.event.PathEndEvent;
+import io.github.fabrielg.pathlight.api.event.PathRecalculateEvent;
 import io.github.fabrielg.pathlight.graph.NavigationGraph;
 import org.bukkit.Color;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
@@ -30,7 +34,12 @@ public class TrailManager {
 	}
 
 	public void stopTrail(Player player) {
-		activeTrails.remove(player.getUniqueId());
+		ActiveTrail trail = activeTrails.remove(player.getUniqueId());
+		if (trail != null) {
+			NavLocation dest = plugin.getNavigationGraph().getLocation(trail.getDestinationWaypointId());
+			PathEndEvent event = new PathEndEvent(player, dest, PathEndEvent.Reason.CANCELLED);
+			plugin.getServer().getPluginManager().callEvent(event);
+		}
 	}
 
 	public boolean hasTrail(Player player) {
@@ -69,6 +78,11 @@ public class TrailManager {
 
 					if (trail.isComplete()) {
 						activeTrails.remove(uuid);
+
+						NavLocation dest = plugin.getNavigationGraph().getLocation(trail.getDestinationWaypointId());
+						PathEndEvent event = new PathEndEvent(player, dest, PathEndEvent.Reason.REACHED);
+						plugin.getServer().getPluginManager().callEvent(event);
+
 						player.sendMessage("§aYou have reached your destination!");
 						continue;
 					}
@@ -151,6 +165,9 @@ public class TrailManager {
 		);
 
 		if (newPath.isEmpty()) return false;
+
+		NavLocation dest = plugin.getNavigationGraph().getLocation(trail.getDestinationWaypointId());
+		PathRecalculateEvent event = new PathRecalculateEvent(player, dest, trail.getPath(), newPath);
 
 		trail.setPath(newPath);
 		trail.setCurrentIndex(0);
