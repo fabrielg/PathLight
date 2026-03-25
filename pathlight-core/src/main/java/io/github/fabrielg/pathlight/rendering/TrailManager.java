@@ -8,12 +8,14 @@ import io.github.fabrielg.pathlight.api.event.PathRecalculateEvent;
 import io.github.fabrielg.pathlight.graph.NavigationGraph;
 import org.bukkit.Color;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 
-public class TrailManager {
+public class TrailManager implements Listener {
 
 	private final PathLightPlugin plugin;
 	private final NavigationGraph graph;
@@ -29,15 +31,14 @@ public class TrailManager {
 	}
 
 	/* API */
-	public void startTrail(Player player, List<Integer> path, int destinationId) {
-		activeTrails.put(player.getUniqueId(), new ActiveTrail(path, destinationId));
+	public void startTrail(Player player, List<Integer> path, NavLocation dest) {
+		activeTrails.put(player.getUniqueId(), new ActiveTrail(path, dest));
 	}
 
 	public void stopTrail(Player player) {
 		ActiveTrail trail = activeTrails.remove(player.getUniqueId());
 		if (trail != null) {
-			NavLocation dest = plugin.getNavigationGraph().getLocation(trail.getDestinationWaypointId());
-			PathEndEvent event = new PathEndEvent(player, dest, PathEndEvent.Reason.CANCELLED);
+			PathEndEvent event = new PathEndEvent(player, trail.getDestination(), PathEndEvent.Reason.CANCELLED);
 			plugin.getServer().getPluginManager().callEvent(event);
 		}
 	}
@@ -65,13 +66,38 @@ public class TrailManager {
 						continue;
 					}
 
+					Waypoint firstOnPath = graph.getWaypoint(trail.getPath().get(trail.getCurrentIndex()));
+					if (firstOnPath != null && !player.getWorld().getName().equals(firstOnPath.getWorld())) {
+						activeTrails.remove(uuid);
+
+						PathEndEvent event = new PathEndEvent(player, trail.getDestination(), PathEndEvent.Reason.CHANGE_WORLD);
+						plugin.getServer().getPluginManager().callEvent(event);
+
+						player.sendMessage("§cNavigation cancelled: you changed worlds.");
+						continue;
+					}
+
+					if (graph.getLocation(trail.getDestination().getId()) == null) {
+						activeTrails.remove(uuid);
+
+						PathEndEvent event = new PathEndEvent(player, trail.getDestination(), PathEndEvent.Reason.DESTINATION_NOT_FOUND);
+						plugin.getServer().getPluginManager().callEvent(event);
+
+						player.sendMessage("§cNavigation cancelled: destination no longer exists.");
+						continue;
+					}
+
 					updateTrailIndex(player, trail);
 
 					if (isOffPath(player, trail)) {
 						boolean recalculated = recalculatePath(player, trail);
 						if (!recalculated) {
-							player.sendMessage("§cCannot find a path from your position.");
 							activeTrails.remove(uuid);
+
+							PathEndEvent event = new PathEndEvent(player, trail.getDestination(), PathEndEvent.Reason.WRONG_POSITION);
+							plugin.getServer().getPluginManager().callEvent(event);
+
+							player.sendMessage("§cCannot find a path from your position.");
 							continue;
 						}
 					}
@@ -79,8 +105,7 @@ public class TrailManager {
 					if (trail.isComplete()) {
 						activeTrails.remove(uuid);
 
-						NavLocation dest = plugin.getNavigationGraph().getLocation(trail.getDestinationWaypointId());
-						PathEndEvent event = new PathEndEvent(player, dest, PathEndEvent.Reason.REACHED);
+						PathEndEvent event = new PathEndEvent(player, trail.getDestination(), PathEndEvent.Reason.REACHED);
 						plugin.getServer().getPluginManager().callEvent(event);
 
 						player.sendMessage("§aYou have reached your destination!");
@@ -161,17 +186,30 @@ public class TrailManager {
 
 		List<Integer> newPath = plugin.getPathfinder().findPath(
 				closestToPlayer.getId(),
-				trail.getDestinationWaypointId()
+				trail.getDestination().getAnchorWaypointId()
 		);
 
 		if (newPath.isEmpty()) return false;
 
-		NavLocation dest = plugin.getNavigationGraph().getLocation(trail.getDestinationWaypointId());
-		PathRecalculateEvent event = new PathRecalculateEvent(player, dest, trail.getPath(), newPath);
+		PathRecalculateEvent event = new PathRecalculateEvent(player, trail.getDestination(), trail.getPath(), newPath);
+		plugin.getServer().getPluginManager().callEvent(event);
 
 		trail.setPath(newPath);
 		trail.setCurrentIndex(0);
 		return true;
+	}
+
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent event) {
+		Player player = event.getPlayer();
+		ActiveTrail trail = activeTrails.remove(player.getUniqueId());
+
+		if (trail != null) {
+			PathEndEvent endEvent = new PathEndEvent(
+					player, trail.getDestination(), PathEndEvent.Reason.DISCONNECTED
+			);
+			plugin.getServer().getPluginManager().callEvent(endEvent);
+		}
 	}
 
 	private double distanceTo(Player player, Waypoint wp) {
@@ -184,18 +222,18 @@ public class TrailManager {
 	private static class ActiveTrail {
 		private List<Integer> path;
 		private int currentIndex = 0;
-		private final int destinationWaypointId;
+		private final NavLocation dest;
 
-		ActiveTrail(List<Integer> path, int destinationWaypointId) {
-			this.path                  = path;
-			this.destinationWaypointId = destinationWaypointId;
+		ActiveTrail(List<Integer> path, NavLocation dest) {
+			this.path = path;
+			this.dest = dest;
 		}
 
 		public List<Integer> getPath()                   { return path; }
 		public void setPath(List<Integer> path)          { this.path = path; }
 		public int getCurrentIndex()                     { return currentIndex; }
 		public void setCurrentIndex(int idx)             { this.currentIndex = idx; }
-		public int getDestinationWaypointId()            { return destinationWaypointId; }
+		public NavLocation getDestination()            	 { return dest; }
 		public boolean isComplete()                      { return currentIndex >= path.size() - 1; }
 	}
 }

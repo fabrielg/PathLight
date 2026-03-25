@@ -56,7 +56,7 @@ public class PathLightAPIImpl implements PathLightAPI {
 		if (event.isCancelled())
 			return false;
 
-		plugin.getTrailManager().startTrail(player, path, anchor.getId());
+		plugin.getTrailManager().startTrail(player, path, destination);
 		return true;
 	}
 

@@ -42,53 +42,141 @@ public class DataManager {
 			saveEmptyFile();
 			return;
 		}
-		
+
+		if (dataFile.length() == 0) {
+			plugin.getLogger().warning(FILE_NAME + " is empty, resetting to default.");
+			saveEmptyFile();
+			return;
+		}
+
 		try (Reader reader = new FileReader(dataFile)) {
-			JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
+			JsonElement parsed = JsonParser.parseReader(reader);
+
+			if (!parsed.isJsonObject()) {
+				plugin.getLogger().severe(FILE_NAME + " is not a valid JSON object. "
+						+ "PathLight will start with an empty graph. "
+						+ "Your file has been backed up as " + FILE_NAME + ".bak");
+				backupCorruptedFile();
+				saveEmptyFile();
+				return;
+			}
+
+			JsonObject root = parsed.getAsJsonObject();
 
 			waypoints.clear();
-			if (root.has("waypoints")) {
-				JsonArray arr = root.getAsJsonArray("waypoints");
-				for (JsonElement el : arr) {
-					JsonObject obj = el.getAsJsonObject();
-					int id			= obj.get("id").getAsInt();
-					String world	= obj.get("world").getAsString();
-					double x		= obj.get("x").getAsDouble();
-					double y		= obj.get("y").getAsDouble();
-					double z		= obj.get("z").getAsDouble();
-					waypoints.put(id, new Waypoint(id, world, x, y, z));
-				}
-			}
-
 			edges.clear();
-			if (root.has("edges")) {
-				JsonArray arr = root.getAsJsonArray("edges");
-				for (JsonElement el : arr) {
-					JsonObject obj = el.getAsJsonObject();
-					int from = obj.get("from").getAsInt();
-					int to   = obj.get("to").getAsInt();
-					edges.add(new Edge(from, to));
-				}
-			}
-
 			locations.clear();
-			if (root.has("locations")) {
-				JsonArray arr = root.getAsJsonArray("locations");
-				for (JsonElement el : arr) {
-					JsonObject obj = el.getAsJsonObject();
-					int id       = obj.get("id").getAsInt();
-					String name  = obj.get("name").getAsString();
-					int anchor   = obj.get("anchor").getAsInt();
-					locations.put(id, new NavLocation(id, name, anchor));
-				}
-			}
+
+			loadWaypoints(root);
+			loadEdges(root);
+			loadLocations(root);
 
 			plugin.getLogger().info("Graph loaded: "
 					+ waypoints.size() + " waypoints, "
 					+ edges.size() + " edges, "
 					+ locations.size() + " locations.");
-		} catch (IOException e) {
-			plugin.getLogger().severe("Failed to load " + FILE_NAME + ": " + e.getMessage());
+
+		} catch (Exception e) {
+			plugin.getLogger().severe("Failed to load " + FILE_NAME + ": " + e.getMessage()
+					+ ". Starting with empty graph. Backup saved as " + FILE_NAME + ".bak");
+			backupCorruptedFile();
+			saveEmptyFile();
+		}
+	}
+
+	private void loadWaypoints(JsonObject root) {
+		if (!root.has("waypoints") || !root.get("waypoints").isJsonArray()) return;
+
+		for (JsonElement el : root.getAsJsonArray("waypoints")) {
+			try {
+				JsonObject obj = el.getAsJsonObject();
+
+				if (!obj.has("id") || !obj.has("world")
+						|| !obj.has("x") || !obj.has("y") || !obj.has("z")) {
+					plugin.getLogger().warning("Skipping malformed waypoint entry: " + obj);
+					continue;
+				}
+
+				int id       = obj.get("id").getAsInt();
+				String world = obj.get("world").getAsString();
+				double x     = obj.get("x").getAsDouble();
+				double y     = obj.get("y").getAsDouble();
+				double z     = obj.get("z").getAsDouble();
+
+				if (waypoints.containsKey(id)) {
+					plugin.getLogger().warning("Duplicate waypoint ID #" + id + " skipped.");
+					continue;
+				}
+
+				waypoints.put(id, new Waypoint(id, world, x, y, z));
+
+			} catch (Exception e) {
+				plugin.getLogger().warning("Skipping invalid waypoint entry: " + e.getMessage());
+			}
+		}
+	}
+
+	private void loadEdges(JsonObject root) {
+		if (!root.has("edges") || !root.get("edges").isJsonArray()) return;
+
+		for (JsonElement el : root.getAsJsonArray("edges")) {
+			try {
+				JsonObject obj = el.getAsJsonObject();
+
+				if (!obj.has("from") || !obj.has("to")) {
+					plugin.getLogger().warning("Skipping malformed edge entry: " + obj);
+					continue;
+				}
+
+				edges.add(new Edge(obj.get("from").getAsInt(), obj.get("to").getAsInt()));
+
+			} catch (Exception e) {
+				plugin.getLogger().warning("Skipping invalid edge entry: " + e.getMessage());
+			}
+		}
+	}
+
+	private void loadLocations(JsonObject root) {
+		if (!root.has("locations") || !root.get("locations").isJsonArray()) return;
+
+		for (JsonElement el : root.getAsJsonArray("locations")) {
+			try {
+				JsonObject obj = el.getAsJsonObject();
+
+				if (!obj.has("id") || !obj.has("name") || !obj.has("anchor")) {
+					plugin.getLogger().warning("Skipping malformed location entry: " + obj);
+					continue;
+				}
+
+				int id      = obj.get("id").getAsInt();
+				String name = obj.get("name").getAsString().trim();
+				int anchor  = obj.get("anchor").getAsInt();
+
+				if (name.isEmpty()) {
+					plugin.getLogger().warning("Skipping location with empty name (id=" + id + ")");
+					continue;
+				}
+
+				if (locations.containsKey(id)) {
+					plugin.getLogger().warning("Duplicate location ID #" + id + " skipped.");
+					continue;
+				}
+
+				locations.put(id, new NavLocation(id, name, anchor));
+
+			} catch (Exception e) {
+				plugin.getLogger().warning("Skipping invalid location entry: " + e.getMessage());
+			}
+		}
+	}
+
+	/**
+	 * Backs up a corrupted graph.json before overwriting it.
+	 */
+	private void backupCorruptedFile() {
+		File backup = new File(plugin.getDataFolder(), FILE_NAME + ".bak");
+		if (dataFile.exists()) {
+			dataFile.renameTo(backup);
 		}
 	}
 
@@ -162,6 +250,8 @@ public class DataManager {
 	public int nextLocationId() {
 		return locations.keySet().stream().mapToInt(i -> i).max().orElse(0) + 1;
 	}
+
+	public String getFileName() { return FILE_NAME; }
 
 	public Map<Integer, Waypoint>    getWaypoints() { return waypoints; }
 	public Map<Integer, NavLocation> getLocations() { return locations; }

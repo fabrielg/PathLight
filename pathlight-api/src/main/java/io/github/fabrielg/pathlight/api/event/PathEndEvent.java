@@ -35,7 +35,13 @@ public class PathEndEvent extends Event {
 		/** Player manually cancelled with /path cancel. */
 		CANCELLED,
 		/** Player disconnected while navigating. */
-		DISCONNECTED
+		DISCONNECTED,
+		/** Player changed world while navigating. */
+		CHANGE_WORLD,
+		/** Destination no longer exists. */
+		DESTINATION_NOT_FOUND,
+		/** Can't find a path from player position. */
+		WRONG_POSITION
 	}
 
 	private final Player player;
