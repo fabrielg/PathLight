@@ -49,7 +49,7 @@ public class PathCommand implements CommandExecutor, TabCompleter {
 			return true;
 		}
 
-		// /path <nom de destination>
+		// /path <destination name>
 		String locationName = String.join(" ", args);
 
 		NavLocation targetLocation = findLocationByName(locationName);
