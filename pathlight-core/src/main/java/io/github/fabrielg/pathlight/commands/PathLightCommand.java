@@ -4,10 +4,12 @@ import io.github.fabrielg.pathlight.PathLightPlugin;
 import io.github.fabrielg.pathlight.api.Edge;
 import io.github.fabrielg.pathlight.api.NavLocation;
 import io.github.fabrielg.pathlight.api.Waypoint;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.List;
  *   /pathlight info location <name>
  *   /pathlight delete waypoint <id>
  *   /pathlight delete location <id>
+ *   /pathlight tp <name>
  */
 public class PathLightCommand implements CommandExecutor, TabCompleter {
 
@@ -51,6 +54,7 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 			case "list"    -> handleList(sender, args);
 			case "info"    -> handleInfo(sender, args);
 			case "delete"  -> handleDelete(sender, args);
+			case "tp", "teleport"	   -> handleTeleport(sender, args);
 			default        -> sendHelp(sender);
 		}
 
@@ -314,6 +318,36 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 				+ " §7was kept.");
 	}
 
+	// ─────────────────────────────────────────
+	//  TELEPORT
+	// ─────────────────────────────────────────
+	private void handleTeleport(CommandSender sender, String[] args) {
+		if (!(sender instanceof Player player)) {
+			sender.sendMessage("§cYou must be a player to execute this command !");
+			return;
+		}
+
+		if (args.length < 2) {
+			sender.sendMessage("§eUsage: /pathlight tp <location name>");
+			return;
+		}
+
+		String name = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
+		NavLocation dest = plugin.getDataManager().getLocations().values().stream()
+				.filter(l -> l.getName().equalsIgnoreCase(name))
+				.findFirst().orElse(null);
+
+		if (dest == null) {
+			sender.sendMessage("§cLocation §f\"" + name + "\" §cnot found.");
+			return;
+		}
+
+		Waypoint anchor = plugin.getDataManager().getWaypoints().get(dest.getAnchorWaypointId());
+		Location location = new Location(plugin.getServer().getWorld(anchor.getWorld()), anchor.getX(), anchor.getY(), anchor.getZ());
+		player.teleport(location);
+		player.sendMessage("§2You've been teleported to §f\"" + name + "\"§7: " + formatCoords(anchor) + "§2.");
+	}
+
     // ─────────────────────────────────────────
 	//  TAB COMPLETION
 	// ─────────────────────────────────────────
@@ -324,7 +358,7 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 		if (!sender.hasPermission("pathlight.admin")) return List.of();
 
 		if (args.length == 1) {
-			return filter(List.of("reload", "stats", "list", "info", "delete"), args[0]);
+			return filter(List.of("reload", "stats", "list", "info", "delete", "teleport"), args[0]);
 		}
 
 		if (args.length == 2) {
@@ -332,6 +366,11 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 				case "list"   -> filter(List.of("locations", "waypoints"), args[1]);
 				case "info"   -> filter(List.of("waypoint", "location"), args[1]);
 				case "delete" -> filter(List.of("waypoint", "location"), args[1]);
+				case "tp", "teleport" -> filter(
+						plugin.getDataManager().getLocations().values()
+								.stream().map(l -> String.valueOf(l.getName())).toList(),
+						args[1]
+				);
 				default -> List.of();
 			};
 		}
@@ -346,7 +385,7 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 					);
 					case "location" -> filter(
 							plugin.getDataManager().getLocations().values()
-									.stream().map(l -> String.valueOf(l.getId())).toList(),
+									.stream().map(l -> String.valueOf(l.getName())).toList(),
 							args[2]
 					);
 					default -> List.of();
@@ -370,6 +409,7 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 		sender.sendMessage("§f/pathlight info location <name> §7— Location details");
 		sender.sendMessage("§f/pathlight delete waypoint <id> §7— Delete a waypoint");
 		sender.sendMessage("§f/pathlight delete location <id> §7— Delete a location");
+		sender.sendMessage("§f/pathlight tp <location name> §7— Teleport to a location");
 	}
 
 	private String formatCoords(Waypoint wp) {
