@@ -142,15 +142,20 @@ public class ParticleRenderer {
 
 	/**
 	 * Renders a real-time line from the player's position
-	 * to the next waypoint on the path.
-	 * Always uses LINEAR style regardless of config
-	 * (a curved line toward the player would look odd).
+	 * to the next waypoints on the path.
+	 * Uses the configured trail style.
 	 */
-	public void renderPlayerToPath(Player player, List<Integer> path,
-								   int fromIndex, Color color) {
+	public void renderPlayerToPath(Player player, List<Integer> path, int fromIndex, Color color) {
 		if (path == null || path.isEmpty()) return;
 		if (fromIndex >= path.size()) return;
 
+		switch (config.getTrailStyle()) {
+			case LINEAR      -> renderPlayerToPathLinear(player, path, fromIndex, color);
+			case CATMULL_ROM -> renderPlayerToPathCatmullRom(player, path, fromIndex, color);
+		}
+	}
+
+	private void renderPlayerToPathLinear(Player player, List<Integer> path, int fromIndex, Color color) {
 		Waypoint next = graph.getWaypoint(path.get(fromIndex));
 		if (next == null) return;
 
@@ -171,14 +176,48 @@ public class ParticleRenderer {
 		if (distance == 0) return;
 
 		int count = (int) Math.ceil(distance / config.getParticleSpacing());
-		Particle.DustOptions dust = new Particle.DustOptions(color, config.getParticleSize());
-
 		for (int i = 0; i <= count; i++) {
 			double t = (double) i / count;
-			player.spawnParticle(Particle.DUST,
-					new Location(world, px + t * dx, py + t * dy, pz + t * dz),
-					1, 0, 0, 0, dust);
+			spawnParticle(player, next.getWorld(),
+					px + t * dx, py + t * dy, pz + t * dz, color);
 		}
+	}
+
+	private void renderPlayerToPathCatmullRom(Player player, List<Integer> path, int fromIndex, Color color) {
+		Waypoint firstWp = graph.getWaypoint(path.get(fromIndex));
+		if (firstWp == null) return;
+
+		World world = player.getServer().getWorld(firstWp.getWorld());
+		if (world == null) return;
+
+		List<Vector> controlPoints = new ArrayList<>();
+
+		controlPoints.add(new Vector(
+				player.getLocation().getX(),
+				player.getLocation().getY() + config.getHeightOffset(),
+				player.getLocation().getZ()
+		));
+
+		int limit = Math.min(fromIndex + 3, path.size());
+		for (int i = fromIndex; i < limit; i++) {
+			Waypoint wp = graph.getWaypoint(path.get(i));
+			if (wp == null) continue;
+			controlPoints.add(new Vector(
+					wp.getX(),
+					wp.getY() + config.getHeightOffset(),
+					wp.getZ()
+			));
+		}
+
+		if (controlPoints.size() < 2) return;
+
+		CatmullRomSpline spline = new CatmullRomSpline(
+				config.getCatmullTension(),
+				config.getCatmullSamples()
+		);
+		List<Vector> splinePoints = spline.generate(controlPoints);
+
+		renderSplinePoints(player, splinePoints, firstWp.getWorld(), color);
 	}
 
 	// ─────────────────────────────────────────
