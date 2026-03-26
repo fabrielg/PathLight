@@ -1,6 +1,7 @@
 package io.github.fabrielg.pathlight.config;
 
 import io.github.fabrielg.pathlight.PathLightPlugin;
+import io.github.fabrielg.pathlight.rendering.TrailStyle;
 import org.bukkit.Color;
 
 /**
@@ -13,11 +14,14 @@ public class PluginConfig {
 	private final PathLightPlugin plugin;
 
 	// Particles
-	private double	particleSpacing;
-	private double	heightOffset;
-	private Color	trailColor;
-	private Color	playerLineColor;
-	private float	particleSize;
+	private double		particleSpacing;
+	private double		heightOffset;
+	private Color		trailColor;
+	private Color		playerLineColor;
+	private float		particleSize;
+	private TrailStyle	trailStyle;
+	private double		catmullTension;
+	private int			catmullSamples;
 
 	// Navigation
 	private long	refreshInterval;
@@ -47,6 +51,9 @@ public class PluginConfig {
 		trailColor            = parseColor("particles.trail-color",       "255,140,0");
 		playerLineColor       = parseColor("particles.player-line-color", "255,200,50");
 		particleSize          = (float) getDouble("particles.size",       1.0);
+		trailStyle			  = parseTrailStyle("particles.trail-style", "CATMULL_ROM");
+		catmullTension 		  = getDouble("particles.catmull-tension", 0.5);
+		catmullSamples  	  = (int) getDouble("particles.catmull-samples-per-segment", 12);
 
 		refreshInterval       = (long) getDouble("navigation.refresh-interval",  10);
 		offPathThreshold      = getDouble("navigation.off-path-threshold",        8.0);
@@ -63,6 +70,10 @@ public class PluginConfig {
 	public Color  getTrailColor()            { return trailColor; }
 	public Color  getPlayerLineColor()       { return playerLineColor; }
 	public float  getParticleSize()          { return particleSize; }
+	public TrailStyle getTrailStyle()		 { return trailStyle; }
+	public double getCatmullTension()		 { return catmullTension; }
+
+	public int getCatmullSamples()			 { return catmullSamples; }
 
 	public long   getRefreshInterval()       { return refreshInterval; }
 	public double getOffPathThreshold()      { return offPathThreshold; }
@@ -116,6 +127,17 @@ public class PluginConfig {
 					Integer.parseInt(parts[1].trim()),
 					Integer.parseInt(parts[2].trim())
 			);
+		}
+	}
+
+	private TrailStyle parseTrailStyle(String path, String defaultValue) {
+		String raw = plugin.getConfig().getString(path, defaultValue);
+		try {
+			return TrailStyle.valueOf(raw.toUpperCase());
+		} catch (IllegalArgumentException e) {
+			plugin.getLogger().warning("Invalid trail-style: \"" + raw
+					+ "\". Valid values: LINEAR, CATMULL_ROM. Using default: " + defaultValue);
+			return TrailStyle.valueOf(defaultValue);
 		}
 	}
 

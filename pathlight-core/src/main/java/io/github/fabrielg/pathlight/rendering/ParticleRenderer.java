@@ -9,12 +9,17 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static io.github.fabrielg.pathlight.rendering.TrailStyle.*;
 
 /**
  * Handles rendering particles along a calculated path.
- * Particles are sent only to the concerned player (client-side only).
+ * Supports LINEAR and CATMULL_ROM trail styles.
+ * Particles are sent only to the concerned player.
  */
 public class ParticleRenderer {
 
@@ -27,39 +32,39 @@ public class ParticleRenderer {
 	}
 
 	/**
-	 * Renders particles along the path starting from a given waypoint index.
-	 * Called repeatedly in real-time as the player moves.
-	 *
-	 * @param player    the player to show particles to
-	 * @param path      the full ordered list of waypoint IDs
-	 * @param fromIndex the index in the path from which to start rendering
-	 */
-	public void render(Player player, List<Integer> path, int fromIndex) {
-		render(player, path, fromIndex, config.getTrailColor());
-	}
-
-	/**
-	 * Same as render() but with a custom color.
+	 * Renders the trail from fromIndex to the end of the path.
+	 * Automatically uses the configured trail style.
 	 */
 	public void render(Player player, List<Integer> path, int fromIndex, Color color) {
 		if (path == null || path.isEmpty()) return;
-		if (fromIndex >= path.size() - 1) return;
+		if (fromIndex >= path.size()) return;
 
-		for (int i = fromIndex; i < path.size() - 1; i++) {
-			Waypoint from = graph.getWaypoint(path.get(i));
-			Waypoint to   = graph.getWaypoint(path.get(i + 1));
+		List<Integer> subPath = path.subList(fromIndex, path.size());
 
-			if (from == null || to == null) continue;
-
-			renderSegment(player, from, to, color);
+		switch (config.getTrailStyle()) {
+			case LINEAR      -> renderLinear(player, subPath, color);
+			case CATMULL_ROM -> renderCatmullRom(player, subPath, color);
 		}
 	}
 
+	// ─────────────────────────────────────────
+	//  STYLE : LINEAR
+	// ─────────────────────────────────────────
+
 	/**
-	 * Renders particles along a straight line between two waypoints.
-	 * Uses linear interpolation to place particles at regular intervals.
+	 * Renders straight lines between each pair of consecutive waypoints.
 	 */
-	private void renderSegment(Player player, Waypoint from, Waypoint to, Color color) {
+	private void renderLinear(Player player, List<Integer> path, Color color) {
+		for (int i = 0; i < path.size() - 1; i++) {
+			Waypoint from = graph.getWaypoint(path.get(i));
+			Waypoint to   = graph.getWaypoint(path.get(i + 1));
+			if (from == null || to == null) continue;
+
+			renderSegmentLinear(player, from, to, color);
+		}
+	}
+
+	private void renderSegmentLinear(Player player, Waypoint from, Waypoint to, Color color) {
 		double distance = from.distanceTo(to);
 		if (distance == 0) return;
 
@@ -67,75 +72,166 @@ public class ParticleRenderer {
 
 		for (int i = 0; i <= count; i++) {
 			double t = (double) i / count;
-
 			double x = from.getX() + t * (to.getX() - from.getX());
 			double y = from.getY() + t * (to.getY() - from.getY()) + config.getHeightOffset();
 			double z = from.getZ() + t * (to.getZ() - from.getZ());
-
 			spawnParticle(player, from.getWorld(), x, y, z, color);
 		}
 	}
 
+	// ─────────────────────────────────────────
+	//  STYLE : CATMULL-ROM
+	// ─────────────────────────────────────────
+
 	/**
-	 * Spawns a single colored DUST particle at the given position.
-	 * Only visible to the specified player.
+	 * Renders a smooth Catmull-Rom spline through all waypoints in the path.
 	 */
-	private void spawnParticle(Player player, String worldName, double x, double y, double z, Color color) {
-		World world = player.getServer().getWorld(worldName);
-		if (world == null) return;
+	private void renderCatmullRom(Player player, List<Integer> path, Color color) {
+		List<Vector> controlPoints = new ArrayList<>();
+		String worldName = null;
 
-		Particle.DustOptions dust = new Particle.DustOptions(color, 1.0f);
+		for (int id : path) {
+			Waypoint wp = graph.getWaypoint(id);
+			if (wp == null) continue;
+			controlPoints.add(new Vector(wp.getX(), wp.getY() + config.getHeightOffset(), wp.getZ()));
+			if (worldName == null) worldName = wp.getWorld();
+		}
 
-		player.spawnParticle(
-				Particle.DUST,
-				new Location(world, x, y, z),
-				(int)config.getParticleSize(),
-				0, 0, 0,
-				dust
+		if (controlPoints.size() < 2 || worldName == null) return;
+
+		CatmullRomSpline spline = new CatmullRomSpline(
+				config.getCatmullTension(),
+				config.getCatmullSamples()
 		);
+		List<Vector> splinePoints = spline.generate(controlPoints);
+
+		renderSplinePoints(player, splinePoints, worldName, color);
 	}
 
 	/**
-	 * Renders a real-time line from the player's current position
-	 * to the next waypoint on the path.
-	 * This shows the player where to go even if they are far from the path.
+	 * Places particles at regular intervals along the spline points.
+	 * Uses distance-based spacing rather than index-based for uniform density.
+	 */
+	private void renderSplinePoints(Player player, List<Vector> points,
+									String worldName, Color color) {
+		double accumulated = 0.0;
+		double spacing     = config.getParticleSpacing();
+
+		spawnParticle(player, worldName,
+				points.get(0).getX(),
+				points.get(0).getY(),
+				points.get(0).getZ(), color);
+
+		for (int i = 1; i < points.size(); i++) {
+			Vector prev = points.get(i - 1);
+			Vector curr = points.get(i);
+
+			double segmentLength = prev.distance(curr);
+			accumulated += segmentLength;
+
+			if (accumulated >= spacing) {
+				spawnParticle(player, worldName, curr.getX(), curr.getY(), curr.getZ(), color);
+				accumulated = 0.0;
+			}
+		}
+	}
+
+	// ─────────────────────────────────────────
+	//  PLAYER LINE → NEXT WAYPOINT
+	// ─────────────────────────────────────────
+
+	/**
+	 * Renders a real-time line from the player's position
+	 * to the next waypoints on the path.
+	 * Uses the configured trail style.
 	 */
 	public void renderPlayerToPath(Player player, List<Integer> path, int fromIndex, Color color) {
 		if (path == null || path.isEmpty()) return;
 		if (fromIndex >= path.size()) return;
 
-		Waypoint nextOnPath = graph.getWaypoint(path.get(fromIndex));
-		if (nextOnPath == null) return;
+		switch (config.getTrailStyle()) {
+			case LINEAR      -> renderPlayerToPathLinear(player, path, fromIndex, color);
+			case CATMULL_ROM -> renderPlayerToPathCatmullRom(player, path, fromIndex, color);
+		}
+	}
 
-		World world = player.getServer().getWorld(nextOnPath.getWorld());
+	private void renderPlayerToPathLinear(Player player, List<Integer> path, int fromIndex, Color color) {
+		Waypoint next = graph.getWaypoint(path.get(fromIndex));
+		if (next == null) return;
+
+		World world = player.getServer().getWorld(next.getWorld());
 		if (world == null) return;
 
 		double px = player.getLocation().getX();
-		double py = player.getLocation().getY() + 0.1;
+		double py = player.getLocation().getY() + config.getHeightOffset();
 		double pz = player.getLocation().getZ();
-
-		double tx = nextOnPath.getX();
-		double ty = nextOnPath.getY() + 0.1;
-		double tz = nextOnPath.getZ();
+		double tx = next.getX();
+		double ty = next.getY() + config.getHeightOffset();
+		double tz = next.getZ();
 
 		double dx = tx - px;
 		double dy = ty - py;
 		double dz = tz - pz;
 		double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
 		if (distance == 0) return;
 
 		int count = (int) Math.ceil(distance / config.getParticleSpacing());
-		Particle.DustOptions dust = new Particle.DustOptions(color, 1.0f);
-
 		for (int i = 0; i <= count; i++) {
 			double t = (double) i / count;
-			player.spawnParticle(
-					Particle.DUST,
-					new Location(world, px + t * dx, py + t * dy, pz + t * dz),
-					(int)config.getParticleSize(),
-					0, 0, 0, dust
-			);
+			spawnParticle(player, next.getWorld(),
+					px + t * dx, py + t * dy, pz + t * dz, color);
 		}
+	}
+
+	private void renderPlayerToPathCatmullRom(Player player, List<Integer> path, int fromIndex, Color color) {
+		Waypoint firstWp = graph.getWaypoint(path.get(fromIndex));
+		if (firstWp == null) return;
+
+		World world = player.getServer().getWorld(firstWp.getWorld());
+		if (world == null) return;
+
+		List<Vector> controlPoints = new ArrayList<>();
+
+		controlPoints.add(new Vector(
+				player.getLocation().getX(),
+				player.getLocation().getY() + config.getHeightOffset(),
+				player.getLocation().getZ()
+		));
+
+		int limit = Math.min(fromIndex + 3, path.size());
+		for (int i = fromIndex; i < limit; i++) {
+			Waypoint wp = graph.getWaypoint(path.get(i));
+			if (wp == null) continue;
+			controlPoints.add(new Vector(
+					wp.getX(),
+					wp.getY() + config.getHeightOffset(),
+					wp.getZ()
+			));
+		}
+
+		if (controlPoints.size() < 2) return;
+
+		CatmullRomSpline spline = new CatmullRomSpline(
+				config.getCatmullTension(),
+				config.getCatmullSamples()
+		);
+		List<Vector> splinePoints = spline.generate(controlPoints);
+
+		renderSplinePoints(player, splinePoints, firstWp.getWorld(), color);
+	}
+
+	// ─────────────────────────────────────────
+	//  HELPER
+	// ─────────────────────────────────────────
+
+	private void spawnParticle(Player player, String worldName,
+							   double x, double y, double z, Color color) {
+		World world = player.getServer().getWorld(worldName);
+		if (world == null) return;
+
+		Particle.DustOptions dust = new Particle.DustOptions(color, config.getParticleSize());
+		player.spawnParticle(Particle.DUST,
+				new Location(world, x, y, z),
+				1, 0, 0, 0, dust);
 	}
 }
