@@ -105,4 +105,19 @@ public interface PathLightAPI {
 	 * Returns an empty list if no path exists.
 	 */
 	List<Integer> calculatePath(int fromWaypointId, int toWaypointId);
+
+	/**
+	 * Returns the active trail for the given player, or null if not navigating.
+	 *
+	 * Example:
+	 * <pre>
+	 * {@code
+	 * IActiveTrail trail = api.getActiveTrail(player);
+	 * if (trail != null) {
+	 *     trail.setTrailColor(Color.RED);
+	 * }
+	 * }
+	 * </pre>
+	 */
+	IActiveTrail getActiveTrail(Player player);
 }

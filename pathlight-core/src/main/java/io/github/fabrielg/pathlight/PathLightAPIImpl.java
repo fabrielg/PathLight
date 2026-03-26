@@ -1,5 +1,6 @@
 package io.github.fabrielg.pathlight;
 
+import io.github.fabrielg.pathlight.api.IActiveTrail;
 import io.github.fabrielg.pathlight.api.NavLocation;
 import io.github.fabrielg.pathlight.api.PathLightAPI;
 import io.github.fabrielg.pathlight.api.Waypoint;
@@ -101,5 +102,10 @@ public class PathLightAPIImpl implements PathLightAPI {
 	@Override
 	public List<Integer> calculatePath(int fromWaypointId, int toWaypointId) {
 		return plugin.getPathfinder().findPath(fromWaypointId, toWaypointId);
+	}
+
+	@Override
+	public IActiveTrail getActiveTrail(Player player) {
+		return plugin.getTrailManager().getActiveTrail(player);
 	}
 }
