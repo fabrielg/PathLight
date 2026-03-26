@@ -110,7 +110,6 @@ public class PathCommand implements CommandExecutor, TabCompleter {
 		List<String> suggestions = new ArrayList<>();
 
 		if (args.length == 1) {
-			suggestions.add("cancel");
 
 			String input = args[0].toLowerCase();
 			for (NavLocation location : plugin.getNavigationGraph().getAllLocations()) {
@@ -118,6 +117,7 @@ public class PathCommand implements CommandExecutor, TabCompleter {
 					suggestions.add(location.getName());
 				}
 			}
+			suggestions.add("cancel");
 		}
 
 		return suggestions;

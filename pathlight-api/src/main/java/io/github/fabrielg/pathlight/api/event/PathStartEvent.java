@@ -1,6 +1,7 @@
 package io.github.fabrielg.pathlight.api.event;
 
 import io.github.fabrielg.pathlight.api.NavLocation;
+import org.bukkit.Color;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -30,12 +31,14 @@ public class PathStartEvent extends Event implements Cancellable {
 	private final NavLocation destination;
 	private final List<Integer> path;
 	private boolean cancelled = false;
+	private Color trailColor;
 
-	public PathStartEvent(Player player, NavLocation destination, List<Integer> path)
+	public PathStartEvent(Player player, NavLocation destination, List<Integer> path, Color color)
 	{
 		this.player = player;
 		this.destination = destination;
 		this.path = path;
+		this.trailColor = color;
 	}
 
 	/** The player who started navigation. */
@@ -46,6 +49,10 @@ public class PathStartEvent extends Event implements Cancellable {
 
 	/** The calculated path as an ordered list of waypoint IDs. */
 	public List<Integer> getPath()		{ return path; }
+
+	public Color getTrailColor()		{ return trailColor; }
+
+	public void setTrailColor(Color c)	{ this.trailColor = c; }
 
 	@Override
 	public boolean isCancelled()		{ return cancelled; }

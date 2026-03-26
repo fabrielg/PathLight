@@ -1,6 +1,7 @@
 package io.github.fabrielg.pathlight.rendering;
 
 import io.github.fabrielg.pathlight.PathLightPlugin;
+import io.github.fabrielg.pathlight.api.IActiveTrail;
 import io.github.fabrielg.pathlight.api.NavLocation;
 import io.github.fabrielg.pathlight.api.Waypoint;
 import io.github.fabrielg.pathlight.api.event.PathEndEvent;
@@ -32,7 +33,10 @@ public class TrailManager implements Listener {
 
 	/* API */
 	public void startTrail(Player player, List<Integer> path, NavLocation dest) {
-		activeTrails.put(player.getUniqueId(), new ActiveTrail(path, dest));
+		activeTrails.put(player.getUniqueId(), new ActiveTrail(path, dest, plugin.getPluginConfig().getTrailColor()));
+	}
+	public void startTrail(Player player, List<Integer> path, NavLocation dest, Color color) {
+		activeTrails.put(player.getUniqueId(), new ActiveTrail(path, dest, color));
 	}
 
 	public void stopTrail(Player player) {
@@ -113,7 +117,7 @@ public class TrailManager implements Listener {
 					}
 
 					renderer.render(player, trail.getPath(), trail.getCurrentIndex(),
-							Color.fromRGB(255, 140, 0));
+							trail.trailColor);
 
 					renderer.renderPlayerToPath(player, trail.getPath(),
 							trail.getCurrentIndex(), plugin.getPluginConfig().getPlayerLineColor());
@@ -219,21 +223,34 @@ public class TrailManager implements Listener {
 		return Math.sqrt(dx * dx + dy * dy + dz * dz);
 	}
 
-	private static class ActiveTrail {
+	/**
+	 * Returns the active trail for the given player, or null if none.
+	 */
+	public IActiveTrail getActiveTrail(Player player) {
+		return activeTrails.get(player.getUniqueId());
+	}
+
+	private static class ActiveTrail implements IActiveTrail {
 		private List<Integer> path;
 		private int currentIndex = 0;
 		private final NavLocation dest;
+		private Color trailColor;
 
-		ActiveTrail(List<Integer> path, NavLocation dest) {
+		ActiveTrail(List<Integer> path, NavLocation dest, Color color) {
 			this.path = path;
 			this.dest = dest;
+			this.trailColor = color;
 		}
 
-		public List<Integer> getPath()                   { return path; }
-		public void setPath(List<Integer> path)          { this.path = path; }
-		public int getCurrentIndex()                     { return currentIndex; }
-		public void setCurrentIndex(int idx)             { this.currentIndex = idx; }
-		public NavLocation getDestination()            	 { return dest; }
-		public boolean isComplete()                      { return currentIndex >= path.size() - 1; }
+		@Override public List<Integer> getPath()				{ return path; }
+		@Override public int getCurrentIndex()					{ return currentIndex; }
+		@Override public NavLocation getDestination()			{ return dest; }
+		@Override public boolean isComplete()					{ return currentIndex >= path.size() - 1; }
+		@Override public Color getTrailColor()					{ return trailColor; }
+		@Override public void setTrailColor(Color trailColor)	{ this.trailColor = trailColor; }
+
+		public void setPath(List<Integer> path)					{ this.path = path; }
+		public void setCurrentIndex(int idx)					{ this.currentIndex = idx; }
+
 	}
 }
