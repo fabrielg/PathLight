@@ -6,14 +6,24 @@ package io.github.fabrielg.pathlight.editor;
 public class EditorSession {
 
 	private EditorMode mode = EditorMode.WAYPOINT;
-
-	private Integer selectedWaypointId = null;
+	private Integer lastWaypointId = null;
+	private boolean autoEdgeEnabled = true;
 
 	public EditorMode getMode()						{ return mode; }
-	public void setMode(EditorMode mode)			{ this.mode = mode; }
+	public void setMode(EditorMode mode) {
+		if (mode == EditorMode.WAYPOINT)
+		{
+			lastWaypointId = null;
+			autoEdgeEnabled = true;
+		}
+		this.mode = mode;
+	}
 
-	public Integer getSelectedWaypointId()			{ return selectedWaypointId; }
-	public void setSelectedWaypointId(Integer id)	{ this.selectedWaypointId = id; }
-	public void clearSelection()					{ this.selectedWaypointId = null; }
-	public boolean hasSelection()					{ return selectedWaypointId != null; }
+	public Integer getLastWaypointId()            { return lastWaypointId; }
+	public void setLastWaypointId(Integer id)     { this.lastWaypointId = id; }
+	public void clearLastWaypoint()               { this.lastWaypointId = null; }
+	public boolean hasLastWaypoint()              { return lastWaypointId != null; }
+
+	public boolean isAutoEdgeEnabled()            { return autoEdgeEnabled; }
+	public void toggleAutoEdge()                  { this.autoEdgeEnabled = !autoEdgeEnabled; }
 }

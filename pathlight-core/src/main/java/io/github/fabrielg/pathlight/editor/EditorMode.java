@@ -6,7 +6,6 @@ package io.github.fabrielg.pathlight.editor;
 public enum EditorMode {
 
 	WAYPOINT("§6Waypoint Mode", "§7Left click a block to place a waypoint. Right click a waypoint to remove it."),
-	EDGE    ("§bEdge Mode",     "§7Left click two waypoints to connect them. Right click to remove all edges of a waypoint."),
 	LOCATION("§dLocation Mode", "§7Left click a waypoint to set a destination. Right click to remove it.");
 
 	private final String displayName;
