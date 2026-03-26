@@ -32,7 +32,10 @@ public class TrailManager implements Listener {
 
 	/* API */
 	public void startTrail(Player player, List<Integer> path, NavLocation dest) {
-		activeTrails.put(player.getUniqueId(), new ActiveTrail(path, dest));
+		activeTrails.put(player.getUniqueId(), new ActiveTrail(path, dest, plugin.getPluginConfig().getTrailColor()));
+	}
+	public void startTrail(Player player, List<Integer> path, NavLocation dest, Color color) {
+		activeTrails.put(player.getUniqueId(), new ActiveTrail(path, dest, color));
 	}
 
 	public void stopTrail(Player player) {
@@ -113,7 +116,7 @@ public class TrailManager implements Listener {
 					}
 
 					renderer.render(player, trail.getPath(), trail.getCurrentIndex(),
-							Color.fromRGB(255, 140, 0));
+							trail.trailColor);
 
 					renderer.renderPlayerToPath(player, trail.getPath(),
 							trail.getCurrentIndex(), plugin.getPluginConfig().getPlayerLineColor());
@@ -223,10 +226,12 @@ public class TrailManager implements Listener {
 		private List<Integer> path;
 		private int currentIndex = 0;
 		private final NavLocation dest;
+		private Color trailColor;
 
-		ActiveTrail(List<Integer> path, NavLocation dest) {
+		ActiveTrail(List<Integer> path, NavLocation dest, Color color) {
 			this.path = path;
 			this.dest = dest;
+			this.trailColor = color;
 		}
 
 		public List<Integer> getPath()                   { return path; }
@@ -235,5 +240,9 @@ public class TrailManager implements Listener {
 		public void setCurrentIndex(int idx)             { this.currentIndex = idx; }
 		public NavLocation getDestination()            	 { return dest; }
 		public boolean isComplete()                      { return currentIndex >= path.size() - 1; }
+		public Color getTrailColor()					 { return trailColor; }
+
+		public void setTrailColor(Color trailColor)		 { this.trailColor = trailColor; }
+
 	}
 }

@@ -1,5 +1,6 @@
 package io.github.fabrielg.pathlight.api;
 
+import org.bukkit.Color;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
@@ -47,13 +48,25 @@ public interface PathLightAPI {
 	boolean startNavigation(Player player, String destinationName);
 
 	/**
+	 * Starts navigation for a player toward the named destination.
+	 * Fires a PathStartEvent (cancellable).
+	 *
+	 * @param player          the player to navigate
+	 * @param destinationName the name of the destination (case-insensitive)
+	 * @param trailColor      the color of the trail
+	 * @return true if navigation started, false if destination not found or no path exists
+	 */
+	boolean startNavigation(Player player, String destinationName, Color trailColor);
+
+	/**
 	 * Starts navigation for a player toward a destination by its ID.
 	 *
 	 * @param player        the player to navigate
 	 * @param locationId    the ID of the NavLocation
+	 * @param trailColor    the color of the trail
 	 * @return true if navigation started successfully
 	 */
-	boolean startNavigationById(Player player, int locationId);
+	boolean startNavigationById(Player player, int locationId, Color trailColor);
 
 	/**
 	 * Stops the active navigation for a player.

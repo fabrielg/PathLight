@@ -4,6 +4,7 @@ import io.github.fabrielg.pathlight.api.NavLocation;
 import io.github.fabrielg.pathlight.api.PathLightAPI;
 import io.github.fabrielg.pathlight.api.Waypoint;
 import io.github.fabrielg.pathlight.api.event.PathStartEvent;
+import org.bukkit.Color;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
@@ -25,11 +26,16 @@ public class PathLightAPIImpl implements PathLightAPI {
 	@Override
 	public boolean startNavigation(Player player, String destinationName) {
 		Optional<NavLocation> location = findLocation(destinationName);
-		return location.filter(l -> startNavigationById(player, l.getId())).isPresent();
+		return location.filter(l -> startNavigationById(player, l.getId(), plugin.getPluginConfig().getTrailColor())).isPresent();
+	}
+	@Override
+	public boolean startNavigation(Player player, String destinationName, Color trailColor) {
+		Optional<NavLocation> location = findLocation(destinationName);
+		return location.filter(l -> startNavigationById(player, l.getId(), trailColor)).isPresent();
 	}
 
 	@Override
-	public boolean startNavigationById(Player player, int locationId) {
+	public boolean startNavigationById(Player player, int locationId, Color trailColor) {
 		NavLocation destination = plugin.getNavigationGraph().getLocation(locationId);
 		if (destination == null)
 			return false;
@@ -51,12 +57,12 @@ public class PathLightAPIImpl implements PathLightAPI {
 		if (path.isEmpty())
 			return false;
 
-		PathStartEvent event = new PathStartEvent(player, destination, path);
+		PathStartEvent event = new PathStartEvent(player, destination, path, trailColor);
 		plugin.getServer().getPluginManager().callEvent(event);
 		if (event.isCancelled())
 			return false;
 
-		plugin.getTrailManager().startTrail(player, path, destination);
+		plugin.getTrailManager().startTrail(player, path, destination, event.getTrailColor());
 		return true;
 	}
 
