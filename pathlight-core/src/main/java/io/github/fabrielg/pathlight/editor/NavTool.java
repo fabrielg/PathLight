@@ -5,11 +5,7 @@ import io.github.fabrielg.pathlight.api.Edge;
 import io.github.fabrielg.pathlight.api.NavLocation;
 import io.github.fabrielg.pathlight.api.Waypoint;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,6 +13,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -36,6 +34,7 @@ public class NavTool implements Listener {
 
 	private final PathLightPlugin plugin;
 	private final Map<UUID, EditorSession> sessions = new HashMap<>();
+	private final List<UUID> prompting = new ArrayList<>();
 
 	public NavTool(PathLightPlugin plugin) {
 		this.plugin = plugin;
@@ -67,6 +66,9 @@ public class NavTool implements Listener {
 
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
+
+		if (event.getHand() == EquipmentSlot.OFF_HAND)
+			return;
 		Player player = event.getPlayer();
 		ItemStack item = player.getInventory().getItemInMainHand();
 
@@ -238,12 +240,38 @@ public class NavTool implements Listener {
 		player.sendMessage("§aEdge created: §f#" + fromId + " §a↔ §f#" + toId);
 	}
 
+	public boolean isPrompting(Player player)
+	{
+		return prompting.contains(player.getUniqueId());
+	}
+
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent event) {
+		Player player = event.getPlayer();
+		if (isPrompting(player))
+			prompting.remove(player.getUniqueId());
+	}
+
 	private void promptLocationName(Player player, Waypoint anchor) {
+		if (isPrompting(player))
+			return;
+		prompting.add(player.getUniqueId());
 		player.sendMessage("§dType the destination name in chat. Type §fcancel §dto abort.");
+
 		plugin.getServer().getPluginManager().registerEvents(
 				new ChatInputListener(plugin, player, input -> {
+					if (!isPrompting(player))
+						return;
 					if (input.equalsIgnoreCase("cancel")) {
 						player.sendMessage("§7Cancelled.");
+						prompting.remove(player.getUniqueId());
+						return;
+					}
+					if (plugin.getDataManager().getLocations().values().stream().anyMatch(n -> n.getName().equals(input)))
+					{
+						player.sendMessage("§cLocation §f\"" + input
+								+ "\" §calready exists !");
+						prompting.remove(player.getUniqueId());
 						return;
 					}
 					int id = plugin.getDataManager().nextLocationId();
@@ -252,6 +280,7 @@ public class NavTool implements Listener {
 					plugin.getDataManager().save();
 					player.sendMessage("§dLocation §f\"" + input
 							+ "\" §dcreated on waypoint §f#" + anchor.getId());
+					prompting.remove(player.getUniqueId());
 				}),
 				plugin
 		);

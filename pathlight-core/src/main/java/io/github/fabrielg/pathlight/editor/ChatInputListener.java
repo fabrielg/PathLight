@@ -1,5 +1,6 @@
 package io.github.fabrielg.pathlight.editor;
 
+import io.github.fabrielg.pathlight.PathLightPlugin;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -27,6 +28,7 @@ public class ChatInputListener implements Listener {
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onChat(AsyncPlayerChatEvent event) {
 		if (!event.getPlayer().getUniqueId().equals(targetUUID)) return;
+		if (!PathLightPlugin.getInstance().getNavTool().isPrompting(event.getPlayer())) return ;
 
 		event.setCancelled(true);
 

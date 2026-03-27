@@ -12,6 +12,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -147,8 +148,15 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 		}
 
 		sender.sendMessage("§6§l--- Waypoints (" + waypoints.size() + ") ---");
-		for (Waypoint wp : waypoints) {
-			long edgeCount = plugin.getDataManager().getEdges().stream()
+		var edges = plugin.getDataManager().getEdges();
+		var sortedWaypoints = waypoints.stream()
+				.sorted(Comparator.comparingInt((Waypoint wp) -> {
+					return (int) edges.stream()
+							.filter(e -> e.getFromId() == wp.getId() || e.getToId() == wp.getId())
+							.count();
+				}).reversed()).toList();
+		for (Waypoint wp : sortedWaypoints) {
+			int edgeCount = (int) edges.stream()
 					.filter(e -> e.getFromId() == wp.getId() || e.getToId() == wp.getId())
 					.count();
 
@@ -156,7 +164,9 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 					.anyMatch(l -> l.getAnchorWaypointId() == wp.getId());
 
 			String anchorTag = isAnchor ? " §d[LOCATION]" : "";
-			String edgeTag   = edgeCount == 0 ? " §c[ISOLATED]" : " §7(" + edgeCount + " edge(s))";
+			String edgeTag   = edgeCount == 0
+					? " §c[ISOLATED]"
+					: " §7(" + edgeCount + " edge(s))";
 
 			sender.sendMessage("§f#" + wp.getId()
 					+ " §7" + wp.getWorld()
