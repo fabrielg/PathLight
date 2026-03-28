@@ -14,8 +14,6 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.fabrielg.pathlight.rendering.TrailStyle.*;
-
 /**
  * Handles rendering particles along a calculated path.
  * Supports LINEAR and CATMULL_ROM trail styles.
