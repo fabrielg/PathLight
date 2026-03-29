@@ -1,5 +1,5 @@
 name: PathLight
-version: 1.0.2
+version: 1.0.4
 main: io.github.fabrielg.pathlight.PathLightPlugin
 api-version: "1.21"
 description: A navigation graph plugin for Minecraft servers

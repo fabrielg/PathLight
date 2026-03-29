@@ -342,7 +342,7 @@ public class NavTool implements Listener {
 			Waypoint to   = plugin.getDataManager().getWaypoints().get(edge.getToId());
 			if (from == null || to == null) continue;
 			if (!from.getWorld().equals(world)) continue;
-			renderEdgeLine(player, from, to, Color.WHITE, 1.5);
+			renderEdgeLine(player, from, to, Color.WHITE, plugin.getPluginConfig().getEdgeParticleSpacing());
 		}
 	}
 
