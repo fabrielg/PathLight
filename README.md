@@ -1,8 +1,3 @@
-
-# Project Title
-
-A brief description of what this project does and who it's for
-
 # 🌟 PathLight
 
 > PathLight is a Minecraft plugin that lets you create illuminated paths to guide players between two destinations. With immersive particle effects, it makes in-game navigation more intuitive and visually appealing.
