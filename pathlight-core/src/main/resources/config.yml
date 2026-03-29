@@ -52,3 +52,13 @@ editor:
 
   # Display refresh interval in ticks
   visualization-interval: 10
+
+  # Editor colors (RGB format)
+  colors:
+    waypoint: "255,215,0"           # golden yellow
+    waypoint-anchor: "255,0,255"    # purple (anchor waypoint for a rental)
+    edge: "255,255,255"             # white
+    location-marker: "255,0,255"    # purple above the anchor
+    placeholder-new: "160,160,160"  # gray (a new waypoint will be created)
+    placeholder-snap: "0,255,0"     # green (snap to existing waypoint)
+    snap-indicator: "0,255,0"       # green (magnetic circle)
