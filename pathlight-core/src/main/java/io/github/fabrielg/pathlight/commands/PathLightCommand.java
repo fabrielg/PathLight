@@ -40,7 +40,8 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (!sender.hasPermission("pathlight.admin")) {
-			sender.sendMessage("§cYou don't have permission to use this command.");
+			if (sender instanceof Player player)
+				plugin.getMessageManager().send(player, "commands.no-permission");
 			return true;
 		}
 
@@ -69,6 +70,7 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 		sender.sendMessage("§7Reloading PathLight...");
 
 		plugin.getPluginConfig().load();
+		plugin.getMessageManager().load();
 		plugin.getDataManager().load();
 		plugin.getNavigationGraph().build();
 
@@ -355,7 +357,12 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 		Waypoint anchor = plugin.getDataManager().getWaypoints().get(dest.getAnchorWaypointId());
 		Location location = new Location(plugin.getServer().getWorld(anchor.getWorld()), anchor.getX(), anchor.getY(), anchor.getZ());
 		player.teleport(location);
-		player.sendMessage("§2You've been teleported to §f\"" + name + "\"§7: " + formatCoords(anchor) + "§2.");
+		plugin.getMessageManager().send(player, "commands.teleported",
+			"destination", name,
+				"x", String.format("%.1f", anchor.getX()),
+				"y", String.format("%.1f", anchor.getY()),
+				"z", String.format("%.1f", anchor.getZ())
+		);
 	}
 
     // ─────────────────────────────────────────

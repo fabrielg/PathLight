@@ -31,6 +31,12 @@ public class PluginConfig {
 	private double	waypointClickRadius;
 	private double	edgeParticleSpacing;
 	private long	visualizationInterval;
+	private Color editorWaypointColor;
+	private Color editorWaypointAnchorColor;
+	private Color editorEdgeColor;
+	private Color editorPlaceholderNewColor;
+	private Color editorPlaceholderSnapColor;
+	private Color editorSnapIndicatorColor;
 
 	public PluginConfig(PathLightPlugin plugin) {
 		this.plugin = plugin;
@@ -61,6 +67,12 @@ public class PluginConfig {
 		waypointClickRadius   = getDouble("editor.waypoint-click-radius",         3.0);
 		edgeParticleSpacing   = getDouble("editor.edge-particle-spacing",         1.5);
 		visualizationInterval = (long) getDouble("editor.visualization-interval", 10);
+		editorWaypointColor        = parseColor("editor.colors.waypoint",          "255,215,0");
+		editorWaypointAnchorColor  = parseColor("editor.colors.waypoint-anchor",   "255,0,255");
+		editorEdgeColor            = parseColor("editor.colors.edge",              "255,255,255");
+		editorPlaceholderNewColor  = parseColor("editor.colors.placeholder-new",   "160,160,160");
+		editorPlaceholderSnapColor = parseColor("editor.colors.placeholder-snap",  "0,255,0");
+		editorSnapIndicatorColor   = parseColor("editor.colors.snap-indicator",    "0,255,0");
 
 		plugin.getLogger().info("Configuration loaded successfully.");
 	}
@@ -81,6 +93,12 @@ public class PluginConfig {
 	public double getWaypointClickRadius()   { return waypointClickRadius; }
 	public double getEdgeParticleSpacing()   { return edgeParticleSpacing; }
 	public long   getVisualizationInterval() { return visualizationInterval; }
+	public Color getEditorWaypointColor()       { return editorWaypointColor; }
+	public Color getEditorWaypointAnchorColor() { return editorWaypointAnchorColor; }
+	public Color getEditorEdgeColor()           { return editorEdgeColor; }
+	public Color getEditorPlaceholderNewColor() { return editorPlaceholderNewColor; }
+	public Color getEditorPlaceholderSnapColor(){ return editorPlaceholderSnapColor; }
+	public Color getEditorSnapIndicatorColor()  { return editorSnapIndicatorColor; }
 
 	/**
 	 * Reads a double from config with a fallback default.

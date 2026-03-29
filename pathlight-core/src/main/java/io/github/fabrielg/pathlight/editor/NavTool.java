@@ -85,8 +85,10 @@ public class NavTool implements Listener {
 			if (isSneaking && session.getMode() == EditorMode.WAYPOINT) {
 				session.toggleAutoEdge();
 				session.clearLastWaypoint();
-				String state = session.isAutoEdgeEnabled() ? "§aON" : "§cOFF";
-				player.sendMessage("§7Auto-edge: " + state);
+				if (session.isAutoEdgeEnabled())
+					plugin.getMessageManager().send(player, "editor.auto-edge-on");
+				else
+					plugin.getMessageManager().send(player, "editor.auto-edge-off");
 				showActionBar(player, session);
 			} else {
 				cycleMode(player, session);
@@ -128,11 +130,11 @@ public class NavTool implements Listener {
 		if (session.getMode() == EditorMode.WAYPOINT) {
 			if (session.hasLastWaypoint()) {
 				session.clearLastWaypoint();
-				player.sendMessage("§7Selection cancelled.");
+				plugin.getMessageManager().send(player, "editor.selection-cancelled");
 				return;
 			}
 			if (nearby == null) {
-				player.sendMessage("§cNo waypoint nearby to delete.");
+				plugin.getMessageManager().send(player, "editor.waypoint-none-nearby");
 				return;
 			}
 			removeWaypoint(player, nearby);
@@ -141,7 +143,7 @@ public class NavTool implements Listener {
 
 		if (session.getMode() == EditorMode.LOCATION) {
 			if (nearby == null) {
-				player.sendMessage("§cNo waypoint nearby to remove location from.");
+				plugin.getMessageManager().send(player, "editor.location-none-nearby");
 				return;
 			}
 			removeLocationOnWaypoint(player, nearby);
@@ -153,7 +155,7 @@ public class NavTool implements Listener {
 			case WAYPOINT -> handleWaypointClick(player, session, clickedLoc, nearby);
 			case LOCATION -> {
 				if (nearby == null) {
-					player.sendMessage("§cNo waypoint here. Click on an existing waypoint.");
+					plugin.getMessageManager().send(player, "editor.location-wp-none-nearby");
 					return;
 				}
 				promptLocationName(player, nearby);
@@ -165,8 +167,9 @@ public class NavTool implements Listener {
 		if (nearby != null) {
 			if (!session.hasLastWaypoint()) {
 				session.setLastWaypointId(nearby.getId());
-				player.sendMessage("§eWaypoint §f#" + nearby.getId()
-						+ " §eselected as start.");
+				plugin.getMessageManager().send(player, "editor.waypoint-selected",
+							"id", String.valueOf(nearby.getId())
+						);
 				return;
 			}
 
@@ -199,8 +202,12 @@ public class NavTool implements Listener {
 		plugin.getNavigationGraph().addWaypoint(wp);
 		plugin.getDataManager().save();
 
-		player.sendMessage("§aWaypoint §f#" + id + " §acreated at §f"
-				+ formatCoords(loc.getX(), loc.getY(), loc.getZ()));
+		plugin.getMessageManager().send(player, "editor.waypoint-created",
+				"id", String.valueOf(id),
+				"x", String.format("%.1f", loc.getX()),
+				"y", String.format("%.1f", loc.getY()),
+				"z", String.format("%.1f", loc.getZ())
+		);
 
 		loc.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, loc, 10, 0.3, 0.3, 0.3, 0);
 		return wp;
@@ -214,8 +221,9 @@ public class NavTool implements Listener {
 		plugin.getDataManager().removeWaypoint(waypoint.getId());
 		plugin.getDataManager().save();
 
-		player.sendMessage("§cWaypoint §f#" + waypoint.getId()
-				+ " §cand its edges removed.");
+		plugin.getMessageManager().send(player, "editor.waypoint-removed",
+				"id", String.valueOf(waypoint.getId())
+		);
 	}
 
 	private void createEdgeIfNotExists(Player player, int fromId, int toId) {
@@ -227,8 +235,10 @@ public class NavTool implements Listener {
 		);
 
 		if (exists) {
-			player.sendMessage("§eEdge between §f#" + fromId
-					+ " §eand §f#" + toId + " §ealready exists.");
+			plugin.getMessageManager().send(player, "editor.edge-already-exists",
+					"from", String.valueOf(fromId),
+					"to", String.valueOf(toId)
+			);
 			return;
 		}
 
@@ -237,7 +247,10 @@ public class NavTool implements Listener {
 		plugin.getNavigationGraph().addEdge(edge);
 		plugin.getDataManager().save();
 
-		player.sendMessage("§aEdge created: §f#" + fromId + " §a↔ §f#" + toId);
+		plugin.getMessageManager().send(player, "editor.edge-created",
+				"from", String.valueOf(fromId),
+				"to", String.valueOf(toId)
+		);
 	}
 
 	public boolean isPrompting(Player player)
@@ -256,21 +269,22 @@ public class NavTool implements Listener {
 		if (isPrompting(player))
 			return;
 		prompting.add(player.getUniqueId());
-		player.sendMessage("§dType the destination name in chat. Type §fcancel §dto abort.");
+		plugin.getMessageManager().send(player, "editor.location-name-prompt");
 
 		plugin.getServer().getPluginManager().registerEvents(
 				new ChatInputListener(plugin, player, input -> {
 					if (!isPrompting(player))
 						return;
 					if (input.equalsIgnoreCase("cancel")) {
-						player.sendMessage("§7Cancelled.");
+						plugin.getMessageManager().send(player, "editor.location-name-cancelled");
 						prompting.remove(player.getUniqueId());
 						return;
 					}
 					if (plugin.getDataManager().getLocations().values().stream().anyMatch(n -> n.getName().equals(input)))
 					{
-						player.sendMessage("§cLocation §f\"" + input
-								+ "\" §calready exists !");
+						plugin.getMessageManager().send(player, "editor.location-already-exists",
+									"destination", input
+						);
 						prompting.remove(player.getUniqueId());
 						return;
 					}
@@ -278,8 +292,10 @@ public class NavTool implements Listener {
 					NavLocation location = new NavLocation(id, input, anchor.getId());
 					plugin.getDataManager().addLocation(location);
 					plugin.getDataManager().save();
-					player.sendMessage("§dLocation §f\"" + input
-							+ "\" §dcreated on waypoint §f#" + anchor.getId());
+					plugin.getMessageManager().send(player, "editor.location-created",
+							"destination", input,
+							"id", String.valueOf(anchor.getId())
+					);
 					prompting.remove(player.getUniqueId());
 				}),
 				plugin
@@ -292,12 +308,16 @@ public class NavTool implements Listener {
 				.findFirst();
 
 		if (found.isEmpty()) {
-			player.sendMessage("§eNo location anchored on waypoint §f#" + waypoint.getId());
+			plugin.getMessageManager().send(player, "editor.location-none-on-wp",
+					"id", String.valueOf(waypoint.getId())
+			);
 			return;
 		}
 		plugin.getDataManager().removeLocation(found.get().getId());
 		plugin.getDataManager().save();
-		player.sendMessage("§cLocation §f\"" + found.get().getName() + "\" §cremoved.");
+		plugin.getMessageManager().send(player, "editor.location-removed",
+				"destination", found.get().getName()
+		);
 	}
 
 	private void startVisualizationLoop() {
@@ -326,14 +346,14 @@ public class NavTool implements Listener {
 
 			Location loc = new Location(player.getWorld(), wp.getX(), wp.getY(), wp.getZ());
 			player.spawnParticle(Particle.DUST, loc, 3, 0.1, 0.1, 0.1,
-					new Particle.DustOptions(Color.YELLOW, 1.5f));
+					new Particle.DustOptions(plugin.getPluginConfig().getEditorWaypointColor(), 1.5f));
 
 			boolean isAnchor = plugin.getDataManager().getLocations().values()
 					.stream().anyMatch(l -> l.getAnchorWaypointId() == wp.getId());
 			if (isAnchor) {
 				player.spawnParticle(Particle.DUST,
 						loc.clone().add(0, 0.5, 0), 3, 0.1, 0.1, 0.1,
-						new Particle.DustOptions(Color.FUCHSIA, 1.5f));
+						new Particle.DustOptions(plugin.getPluginConfig().getEditorWaypointAnchorColor(), 1.5f));
 			}
 		}
 
@@ -342,7 +362,9 @@ public class NavTool implements Listener {
 			Waypoint to   = plugin.getDataManager().getWaypoints().get(edge.getToId());
 			if (from == null || to == null) continue;
 			if (!from.getWorld().equals(world)) continue;
-			renderEdgeLine(player, from, to, Color.WHITE, plugin.getPluginConfig().getEdgeParticleSpacing());
+			renderEdgeLine(player, from, to,
+					plugin.getPluginConfig().getEditorEdgeColor(),
+					plugin.getPluginConfig().getEdgeParticleSpacing());
 		}
 	}
 
@@ -372,11 +394,11 @@ public class NavTool implements Listener {
 			renderSnapIndicator(player, snapLoc);
 
 			renderPlaceholderLine(player, lastWp, snapTarget.getX(),
-					snapTarget.getY(), snapTarget.getZ(), Color.LIME);
+					snapTarget.getY(), snapTarget.getZ(), plugin.getPluginConfig().getEditorPlaceholderSnapColor());
 		} else {
 			renderPlaceholderLine(player, lastWp,
 					targetLoc.getX(), targetLoc.getY(), targetLoc.getZ(),
-					Color.fromRGB(160, 160, 160));
+					plugin.getPluginConfig().getEditorPlaceholderNewColor());
 		}
 	}
 
@@ -406,7 +428,7 @@ public class NavTool implements Listener {
 	private void renderSnapIndicator(Player player, Location center) {
 		int points = 8;
 		double radius = 0.5;
-		Particle.DustOptions dust = new Particle.DustOptions(Color.LIME, 1.2f);
+		Particle.DustOptions dust = new Particle.DustOptions(plugin.getPluginConfig().getEditorSnapIndicatorColor(), 1.2f);
 
 		for (int i = 0; i < points; i++) {
 			double angle = (2 * Math.PI / points) * i;
@@ -437,21 +459,24 @@ public class NavTool implements Listener {
 	private void cycleMode(Player player, EditorSession session) {
 		session.setMode(session.getMode().next());
 		showActionBar(player, session);
-		player.sendMessage(session.getMode().getDisplayName()
-				+ " §7— " + session.getMode().getHint());
+
+		if (session.getMode() == EditorMode.WAYPOINT)
+			plugin.getMessageManager().send(player, "editor.mode-waypoint");
+		else if (session.getMode() == EditorMode.LOCATION)
+			plugin.getMessageManager().send(player, "editor.mode-location");
 	}
 
 	private void showActionBar(Player player, EditorSession session) {
 		String autoEdgeInfo = session.getMode() == EditorMode.WAYPOINT
-				? (session.isAutoEdgeEnabled() ? " §7| Auto-edge: §aON" : " §7| Auto-edge: §cOFF")
+				? (plugin.getMessageManager().getEdgeOnOff(session.isAutoEdgeEnabled()))
 				: "";
 
 		String lastWpInfo = session.hasLastWaypoint()
-				? " §7| Last: §f#" + session.getLastWaypointId()
+				? "§7| Last: §f#" + session.getLastWaypointId()
 				: "";
 
 		player.sendActionBar(Component.text(
-				session.getMode().getDisplayName() + autoEdgeInfo + lastWpInfo
+				session.getMode().getDisplayName() + " " + autoEdgeInfo  + " " +  lastWpInfo
 		));
 	}
 
@@ -486,9 +511,5 @@ public class NavTool implements Listener {
 
 	private EditorSession getOrCreateSession(Player player) {
 		return sessions.computeIfAbsent(player.getUniqueId(), k -> new EditorSession());
-	}
-
-	private String formatCoords(double x, double y, double z) {
-		return String.format("%.1f, %.1f, %.1f", x, y, z);
 	}
 }
