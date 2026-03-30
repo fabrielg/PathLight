@@ -28,7 +28,7 @@ public class NavTool implements Listener {
 
 	private final double WAYPOINT_CLICK_RADIUS;
 
-	private static final double SNAP_RADIUS = 2.0;
+	private final double SNAP_RADIUS;
 
 	private static final int MAX_TARGET_DISTANCE = 20;
 
@@ -39,6 +39,7 @@ public class NavTool implements Listener {
 	public NavTool(PathLightPlugin plugin) {
 		this.plugin = plugin;
 		this.WAYPOINT_CLICK_RADIUS = plugin.getPluginConfig().getWaypointClickRadius();
+		this.SNAP_RADIUS = plugin.getPluginConfig().getWaypointSnapRadius();
 		startVisualizationLoop();
 	}
 
@@ -384,7 +385,7 @@ public class NavTool implements Listener {
 		String worldName     = player.getWorld().getName();
 
 		Waypoint snapTarget = getNearbyWaypointExcluding(
-				targetLoc, worldName, lastWp.getId()
+				targetLoc, worldName, lastWp.getId(), SNAP_RADIUS
 		);
 
 		if (snapTarget != null) {
@@ -413,8 +414,7 @@ public class NavTool implements Listener {
 		double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 		if (distance == 0) return;
 
-		double spacing = 0.8;
-		int count = (int) Math.ceil(distance / spacing);
+		int count = (int) Math.ceil(distance / plugin.getPluginConfig().getEdgeParticleSpacing());
 
 		Particle.DustOptions dust = new Particle.DustOptions(color, 0.8f);
 		for (int i = 0; i <= count; i++) {
@@ -481,16 +481,16 @@ public class NavTool implements Listener {
 	}
 
 	private Waypoint getNearbyWaypoint(Location loc, String world) {
-		return getNearbyWaypointExcluding(loc, world, -1);
+		return getNearbyWaypointExcluding(loc, world, -1, WAYPOINT_CLICK_RADIUS);
 	}
 
 	/**
 	 * Find the nearest waypoint within the detection radius,
 	 * optionally excluding a specific waypoint (to avoid snapping to the lastWaypoint).
 	 */
-	private Waypoint getNearbyWaypointExcluding(Location loc, String world, int excludeId) {
+	private Waypoint getNearbyWaypointExcluding(Location loc, String world, int excludeId, double radius) {
 		Waypoint closest = null;
-		double minDist   = SNAP_RADIUS;
+		double minDist   = radius;
 
 		for (Waypoint wp : plugin.getDataManager().getWaypoints().values()) {
 			if (!wp.getWorld().equals(world)) continue;

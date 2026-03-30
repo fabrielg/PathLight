@@ -29,6 +29,7 @@ public class PluginConfig {
 
 	// Editor
 	private double	waypointClickRadius;
+	private double	waypointSnapRadius;
 	private double	edgeParticleSpacing;
 	private long	visualizationInterval;
 	private Color editorWaypointColor;
@@ -52,26 +53,27 @@ public class PluginConfig {
 
 		plugin.reloadConfig();
 
-		particleSpacing       = getDouble("particles.spacing",           0.5);
+		particleSpacing       = getDouble("particles.spacing",           0.4);
 		heightOffset          = getDouble("particles.height-offset",      0.1);
 		trailColor            = parseColor("particles.trail-color",       "255,140,0");
-		playerLineColor       = parseColor("particles.player-line-color", "255,200,50");
-		particleSize          = (float) getDouble("particles.size",       1.0);
+		playerLineColor       = parseColor("particles.player-line-color", "255,140,0");
+		particleSize          = (float) getDouble("particles.size",       1.4);
 		trailStyle			  = parseTrailStyle("particles.trail-style", "CATMULL_ROM");
 		catmullTension 		  = getDouble("particles.catmull-tension", 0.5);
 		catmullSamples  	  = (int) getDouble("particles.catmull-samples-per-segment", 12);
 
-		refreshInterval       = (long) getDouble("navigation.refresh-interval",  10);
+		refreshInterval       = (long) getDouble("navigation.refresh-interval",  5);
 		offPathThreshold      = getDouble("navigation.off-path-threshold",        8.0);
 
-		waypointClickRadius   = getDouble("editor.waypoint-click-radius",         3.0);
-		edgeParticleSpacing   = getDouble("editor.edge-particle-spacing",         1.5);
-		visualizationInterval = (long) getDouble("editor.visualization-interval", 10);
+		waypointClickRadius   = getDouble("editor.waypoint-click-radius",         1.0);
+		waypointSnapRadius    = getDouble("editor.waypoint-snap-radius",          1.5);
+		edgeParticleSpacing   = getDouble("editor.edge-particle-spacing",         0.1);
+		visualizationInterval = (long) getDouble("editor.visualization-interval", 5);
 		editorWaypointColor        = parseColor("editor.colors.waypoint",          "255,215,0");
 		editorWaypointAnchorColor  = parseColor("editor.colors.waypoint-anchor",   "255,0,255");
 		editorEdgeColor            = parseColor("editor.colors.edge",              "255,255,255");
 		editorPlaceholderNewColor  = parseColor("editor.colors.placeholder-new",   "160,160,160");
-		editorPlaceholderSnapColor = parseColor("editor.colors.placeholder-snap",  "0,255,0");
+		editorPlaceholderSnapColor = parseColor("editor.colors.placeholder-snap",  "0,255,255");
 		editorSnapIndicatorColor   = parseColor("editor.colors.snap-indicator",    "0,255,0");
 
 		plugin.getLogger().info("Configuration loaded successfully.");
@@ -91,6 +93,7 @@ public class PluginConfig {
 	public double getOffPathThreshold()      { return offPathThreshold; }
 
 	public double getWaypointClickRadius()   { return waypointClickRadius; }
+	public double getWaypointSnapRadius()    { return waypointSnapRadius; }
 	public double getEdgeParticleSpacing()   { return edgeParticleSpacing; }
 	public long   getVisualizationInterval() { return visualizationInterval; }
 	public Color getEditorWaypointColor()       { return editorWaypointColor; }
