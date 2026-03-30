@@ -4,6 +4,7 @@ import io.github.fabrielg.pathlight.api.PathLightAPIProvider;
 import io.github.fabrielg.pathlight.commands.NavToolCommand;
 import io.github.fabrielg.pathlight.commands.PathCommand;
 import io.github.fabrielg.pathlight.commands.PathLightCommand;
+import io.github.fabrielg.pathlight.config.MessageManager;
 import io.github.fabrielg.pathlight.config.PluginConfig;
 import io.github.fabrielg.pathlight.data.DataManager;
 import io.github.fabrielg.pathlight.editor.NavTool;
@@ -20,6 +21,7 @@ public class PathLightPlugin extends JavaPlugin {
 
 	private static PathLightPlugin instance;
 	private PluginConfig config;
+	private MessageManager messageManager;
 	private DataManager dataManager;
 	private NavigationGraph navigationGraph;
 	private AStarPathfinder pathfinder;
@@ -36,6 +38,7 @@ public class PathLightPlugin extends JavaPlugin {
 		getLogger().info("╚═══════════════════════════╝");
 
 		this.config = new PluginConfig(this);
+		this.messageManager = new MessageManager(this);
 
 		this.dataManager = new DataManager(this);
 		dataManager.load();
@@ -87,6 +90,7 @@ public class PathLightPlugin extends JavaPlugin {
 
 	public static PathLightPlugin getInstance()	{ return instance; }
 	public PluginConfig getPluginConfig()		{ return config; }
+	public MessageManager getMessageManager()	{ return messageManager; }
 	public DataManager getDataManager()			{ return dataManager; }
 	public NavigationGraph getNavigationGraph()	{ return navigationGraph; }
 	public AStarPathfinder getPathfinder()		{ return pathfinder; }

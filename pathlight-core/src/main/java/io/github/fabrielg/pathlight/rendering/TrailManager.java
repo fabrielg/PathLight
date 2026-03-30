@@ -33,10 +33,14 @@ public class TrailManager implements Listener {
 
 	/* API */
 	public void startTrail(Player player, List<Integer> path, NavLocation dest) {
-		activeTrails.put(player.getUniqueId(), new ActiveTrail(path, dest, plugin.getPluginConfig().getTrailColor()));
+		startTrail(player, path, dest, plugin.getPluginConfig().getTrailColor());
 	}
 	public void startTrail(Player player, List<Integer> path, NavLocation dest, Color color) {
 		activeTrails.put(player.getUniqueId(), new ActiveTrail(path, dest, color));
+		plugin.getMessageManager().log("logs.navigation-start",
+				"player", player.getName(),
+				"destination", dest.getName()
+		);
 	}
 
 	public void stopTrail(Player player) {
@@ -44,6 +48,11 @@ public class TrailManager implements Listener {
 		if (trail != null) {
 			PathEndEvent event = new PathEndEvent(player, trail.getDestination(), PathEndEvent.Reason.CANCELLED);
 			plugin.getServer().getPluginManager().callEvent(event);
+			plugin.getMessageManager().log("logs.navigation-cancelled",
+					"player", player.getName(),
+					"destination", trail.getDestination().getName(),
+					"reason", PathEndEvent.Reason.CANCELLED.name()
+			);
 		}
 	}
 
@@ -76,8 +85,13 @@ public class TrailManager implements Listener {
 
 						PathEndEvent event = new PathEndEvent(player, trail.getDestination(), PathEndEvent.Reason.CHANGE_WORLD);
 						plugin.getServer().getPluginManager().callEvent(event);
+						plugin.getMessageManager().log("logs.navigation-cancelled",
+								"player", player.getName(),
+								"destination", trail.getDestination().getName(),
+								"reason", PathEndEvent.Reason.CHANGE_WORLD.name()
+						);
 
-						player.sendMessage("§cNavigation cancelled: you changed worlds.");
+						plugin.getMessageManager().send(player, "navigation.cancelled-world-change");
 						continue;
 					}
 
@@ -86,8 +100,13 @@ public class TrailManager implements Listener {
 
 						PathEndEvent event = new PathEndEvent(player, trail.getDestination(), PathEndEvent.Reason.DESTINATION_NOT_FOUND);
 						plugin.getServer().getPluginManager().callEvent(event);
+						plugin.getMessageManager().log("logs.navigation-cancelled",
+								"player", player.getName(),
+								"destination", trail.getDestination().getName(),
+								"reason", PathEndEvent.Reason.DESTINATION_NOT_FOUND.name()
+						);
 
-						player.sendMessage("§cNavigation cancelled: destination no longer exists.");
+						plugin.getMessageManager().send(player, "navigation.cancelled-destination-missing");
 						continue;
 					}
 
@@ -100,8 +119,13 @@ public class TrailManager implements Listener {
 
 							PathEndEvent event = new PathEndEvent(player, trail.getDestination(), PathEndEvent.Reason.WRONG_POSITION);
 							plugin.getServer().getPluginManager().callEvent(event);
+							plugin.getMessageManager().log("logs.navigation-cancelled",
+									"player", player.getName(),
+									"destination", trail.getDestination().getName(),
+									"reason", PathEndEvent.Reason.WRONG_POSITION.name()
+							);
 
-							player.sendMessage("§cCannot find a path from your position.");
+							plugin.getMessageManager().send(player, "navigation.cancelled-wrong-position");
 							continue;
 						}
 					}
@@ -111,8 +135,17 @@ public class TrailManager implements Listener {
 
 						PathEndEvent event = new PathEndEvent(player, trail.getDestination(), PathEndEvent.Reason.REACHED);
 						plugin.getServer().getPluginManager().callEvent(event);
+						plugin.getMessageManager().log("logs.navigation-end",
+								"player", player.getName(),
+								"destination", trail.getDestination().getName()
+						);
+						plugin.getMessageManager().log("logs.navigation-cancelled",
+								"player", player.getName(),
+								"destination", trail.getDestination().getName(),
+								"reason", PathEndEvent.Reason.REACHED.name()
+						);
 
-						player.sendMessage("§aYou have reached your destination!");
+						plugin.getMessageManager().send(player, "navigation.reached");
 						continue;
 					}
 
@@ -213,6 +246,11 @@ public class TrailManager implements Listener {
 					player, trail.getDestination(), PathEndEvent.Reason.DISCONNECTED
 			);
 			plugin.getServer().getPluginManager().callEvent(endEvent);
+			plugin.getMessageManager().log("logs.navigation-cancelled",
+					"player", player.getName(),
+					"destination", trail.getDestination().getName(),
+					"reason", PathEndEvent.Reason.DISCONNECTED.name()
+			);
 		}
 	}
 

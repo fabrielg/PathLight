@@ -20,18 +20,18 @@ public class NavToolCommand implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (!(sender instanceof Player player)) {
-			sender.sendMessage("§cThis command can only be used by a player.");
+			String playerOnly = plugin.getMessageManager().get("commands.player-only");
+			if (!playerOnly.isEmpty())
+				sender.sendMessage(playerOnly);
 			return true;
 		}
 
 		if (!player.hasPermission("pathlight.admin")) {
-			player.sendMessage("§cYou don't have permission to use this command.");
+			plugin.getMessageManager().send(player, "commands.no-permission");
 			return true;
 		}
 
 		player.getInventory().addItem(plugin.getNavTool().createToolItem());
-		player.sendMessage("§aNavigation Editor tool given!");
-		player.sendMessage("§7Right click in air to cycle modes.");
 		return true;
 	}
 }

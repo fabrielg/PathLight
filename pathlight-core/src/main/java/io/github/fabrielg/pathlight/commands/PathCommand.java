@@ -29,7 +29,9 @@ public class PathCommand implements CommandExecutor, TabCompleter {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (!(sender instanceof Player player)) {
-			sender.sendMessage("§cThis command can only be used by a player.");
+			String playerOnly = plugin.getMessageManager().get("commands.player-only");
+			if (!playerOnly.isEmpty())
+				sender.sendMessage(playerOnly);
 			return true;
 		}
 
@@ -42,9 +44,9 @@ public class PathCommand implements CommandExecutor, TabCompleter {
 		if (args[0].equalsIgnoreCase("cancel")) {
 			if (plugin.getTrailManager().hasTrail(player)) {
 				plugin.getTrailManager().stopTrail(player);
-				player.sendMessage("§cNavigation cancelled.");
+				plugin.getMessageManager().send(player, "navigation.cancelled");
 			} else {
-				player.sendMessage("§eYou have no active navigation.");
+				plugin.getMessageManager().send(player, "navigation.no-trail-active");
 			}
 			return true;
 		}
@@ -55,14 +57,14 @@ public class PathCommand implements CommandExecutor, TabCompleter {
 		NavLocation targetLocation = findLocationByName(locationName);
 
 		if (targetLocation == null) {
-			player.sendMessage("§cDestination §e\"" + locationName + "\" §cnot found.");
-			player.sendMessage("§7Use /path with a valid destination name.");
+			plugin.getMessageManager().send(player, "navigation.destination-not-found",
+					"destination", locationName);
 			return true;
 		}
 
 		Waypoint anchorWaypoint = plugin.getNavigationGraph().getWaypoint(targetLocation.getAnchorWaypointId());
 		if (anchorWaypoint == null) {
-			player.sendMessage("§cThis destination has no valid anchor waypoint. Contact an admin.");
+			plugin.getMessageManager().send(player, "navigation.invalid-anchor");
 			return true;
 		}
 
@@ -74,7 +76,7 @@ public class PathCommand implements CommandExecutor, TabCompleter {
 		);
 
 		if (closestToPlayer == null) {
-			player.sendMessage("§cNo waypoints found in this world. Contact an admin.");
+			plugin.getMessageManager().send(player, "navigation.no-waypoints-in-world");
 			return true;
 		}
 
@@ -85,13 +87,15 @@ public class PathCommand implements CommandExecutor, TabCompleter {
 		);
 
 		if (path.isEmpty()) {
-			player.sendMessage("§cNo path found to §e" + targetLocation.getName() + "§c.");
+			plugin.getMessageManager().send(player, "navigation.no-path-found",
+					"destination", targetLocation.getName());
 			return true;
 		}
 
 		plugin.getTrailManager().startTrail(player, path, targetLocation);
-		player.sendMessage("§aNavigating to §e" + targetLocation.getName() + "§a. Follow the trail!");
-		player.sendMessage("§7Type §f/path cancel §7to stop navigation.");
+		plugin.getMessageManager().send(player, "navigation.started",
+				"destination", targetLocation.getName());
+		plugin.getMessageManager().send(player, "navigation.hint-cancel");
 
 		return true;
 	}

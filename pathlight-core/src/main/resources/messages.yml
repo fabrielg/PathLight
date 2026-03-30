@@ -1,0 +1,83 @@
+# ╔══════════════════════════════════════╗
+# ║        PathLight Messages            ║
+# ╚══════════════════════════════════════╝
+#
+# Available placeholders:
+#   {prefix}        → the prefix configured below
+#   {player}        → player's name
+#   {destination}   → destination name
+#   {id}            → ID of a waypoint or location
+#   {x} {y} {z}     → coordinates
+#   {from} {to}     → IDs for the edges
+#   {reason}        → reason for cancellation
+#
+# ❗ Setting a value to “” disables the message.
+
+prefix: "§6✦ [PathLight]§r "
+
+# ── Editor ────────────────────────────────────────────────────────────────────
+
+editor:
+  waypoint-selected:       "{prefix}§eWaypoint §f#{id} §eselected as start."
+  waypoint-created:        "{prefix}§aWaypoint §f#{id} §acreated at §f{x}, {y}, {z}."
+  waypoint-removed:        "{prefix}§cWaypoint §f#{id} §cand its edges removed."
+  waypoint-none-nearby:    "{prefix}§cNo waypoint nearby to delete."
+
+  edge-created:            "{prefix}§aEdge created: §f#{from} §a↔ §f#{to}."
+  edge-already-exists:     "{prefix}§eEdge between §f#{from} §eand §f#{to} §ealready exists."
+
+  auto-edge-on:            "{prefix}§7Auto-edge: §aON"
+  auto-edge-off:           "{prefix}§7Auto-edge: §cOFF"
+  selection-cancelled:     "{prefix}§7Selection cancelled."
+
+  location-created:        "{prefix}§dLocation §f\"{destination}\" §dcreated on waypoint §f#{id}."
+  location-removed:        "{prefix}§cLocation §f\"{destination}\" §cremoved."
+  location-none-nearby:    "{prefix}§cNo waypoint nearby to remove location from."
+  location-wp-none-nearby: "{prefix}§cNo waypoint here. Click on an existing waypoint."
+  location-none-on-wp:     "{prefix}§eNo location anchored on waypoint §f#{id}."
+  location-name-prompt:    "{prefix}§dType the destination name in chat. Type §fcancel §dto abort."
+  location-name-cancelled: "{prefix}§7Cancelled."
+  location-already-exists: "{prefix}§cLocation §f{destination} §calready exists."
+
+  mode-waypoint:           "{prefix}§6Waypoint Mode §7— Left click to place/connect. Shift+Right click to toggle auto-edge."
+  mode-location:           "{prefix}§dLocation Mode §7— Left click a waypoint to set a destination. Shift+Left click to remove it."
+
+# ── Navigation ────────────────────────────────────────────────────────────────
+
+navigation:
+  started:              "{prefix}§aNavigating to §e{destination}§a. Follow the trail!"
+  hint-cancel:          "{prefix}§7Type §f/path cancel §7to stop navigation."
+  cancelled:            "{prefix}§cNavigation cancelled."
+  reached:              "{prefix}§aYou have reached your destination!"
+  no-trail-active:      "{prefix}§eYou have no active navigation."
+  destination-not-found: "{prefix}§cDestination §e\"{destination}\" §cnot found."
+  invalid-anchor:        "{prefix}§cThis destination has no valid anchor waypoint. Contact an admin."
+  no-waypoints-in-world: "{prefix}§cNo waypoints found in this world. Contact an admin."
+  no-path-found:        "{prefix}§cNo path found to §e{destination}§c."
+  cancelled-world-change:       "{prefix}§cNavigation cancelled: you changed worlds."
+  cancelled-destination-missing: "{prefix}§cNavigation cancelled: destination no longer exists."
+  cancelled-wrong-position:     "{prefix}§cCannot find a path from your position."
+
+# ── Commands ──────────────────────────────────────────────────────────────────
+
+commands:
+  teleported:           "{prefix}§aTeleported to §e{destination}§7 ({x}, {y}, {z})§a."
+  no-permission:        "{prefix}§cYou don't have permission to use this command."
+  player-only:          "{prefix}§cThis command can only be used by a player."
+
+# ── Admin logs (console only) ─────────────────────────────────────────────────
+# These messages are disabled by default because they can flood the console on a large server.
+# Set enabled: true to enable them.
+
+logs:
+  navigation-start:
+    enabled: false
+    message: "{player} started navigation to {destination}."
+
+  navigation-end:
+    enabled: false
+    message: "{player} arrived at {destination}."
+
+  navigation-cancelled:
+    enabled: false
+    message: "{player} navigation to {destination} cancelled ({reason})."
