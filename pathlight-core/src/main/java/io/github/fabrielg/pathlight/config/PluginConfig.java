@@ -54,27 +54,67 @@ public class PluginConfig {
 		plugin.reloadConfig();
 
 		particleSpacing       = getDouble("particles.spacing",           0.4);
+		plugin.getLogger().info("particleSpacing: " + particleSpacing);
+
 		heightOffset          = getDouble("particles.height-offset",      0.1);
+		plugin.getLogger().info("heightOffset: " + heightOffset);
+
 		trailColor            = parseColor("particles.trail-color",       "255,140,0");
+		plugin.getLogger().info("trailColor: " + trailColor);
+
 		playerLineColor       = parseColor("particles.player-line-color", "255,140,0");
+		plugin.getLogger().info("playerLineColor: " + playerLineColor);
+
 		particleSize          = (float) getDouble("particles.size",       1.4);
+		plugin.getLogger().info("particleSize: " + particleSize);
+
 		trailStyle			  = parseTrailStyle("particles.trail-style", "CATMULL_ROM");
+		plugin.getLogger().info("trailStyle: " + trailStyle);
+
 		catmullTension 		  = getDouble("particles.catmull-tension", 0.5);
+		plugin.getLogger().info("catmullTension: " + catmullTension);
+
 		catmullSamples  	  = (int) getDouble("particles.catmull-samples-per-segment", 12);
+		plugin.getLogger().info("catmullSamples: " + catmullSamples);
+
 
 		refreshInterval       = (long) getDouble("navigation.refresh-interval",  5);
+		plugin.getLogger().info("refreshInterval: " + refreshInterval);
+
 		offPathThreshold      = getDouble("navigation.off-path-threshold",        8.0);
+		plugin.getLogger().info("offPathThreshold: " + offPathThreshold);
+
 
 		waypointClickRadius   = getDouble("editor.waypoint-click-radius",         1.0);
+		plugin.getLogger().info("waypointClickRadius: " + waypointClickRadius);
+
 		waypointSnapRadius    = getDouble("editor.waypoint-snap-radius",          1.5);
+		plugin.getLogger().info("waypointSnapRadius: " + waypointSnapRadius);
+
 		edgeParticleSpacing   = getDouble("editor.edge-particle-spacing",         0.1);
+		plugin.getLogger().info("edgeParticleSpacing: " + edgeParticleSpacing);
+
 		visualizationInterval = (long) getDouble("editor.visualization-interval", 5);
+		plugin.getLogger().info("visualizationInterval: " + visualizationInterval);
+
 		editorWaypointColor        = parseColor("editor.colors.waypoint",          "255,215,0");
+		plugin.getLogger().info("editorWaypointColor: " + editorWaypointColor);
+
 		editorWaypointAnchorColor  = parseColor("editor.colors.waypoint-anchor",   "255,0,255");
+		plugin.getLogger().info("editorWaypointAnchorColor: " + editorWaypointAnchorColor);
+
 		editorEdgeColor            = parseColor("editor.colors.edge",              "255,255,255");
+		plugin.getLogger().info("editorEdgeColor: " + editorEdgeColor);
+
 		editorPlaceholderNewColor  = parseColor("editor.colors.placeholder-new",   "160,160,160");
+		plugin.getLogger().info("editorPlaceholderNewColor: " + editorPlaceholderNewColor);
+
 		editorPlaceholderSnapColor = parseColor("editor.colors.placeholder-snap",  "0,255,255");
+		plugin.getLogger().info("editorPlaceholderSnapColor: " + editorPlaceholderSnapColor);
+
 		editorSnapIndicatorColor   = parseColor("editor.colors.snap-indicator",    "0,255,0");
+		plugin.getLogger().info("editorSnapIndicatorColor: " + editorSnapIndicatorColor);
+
 
 		plugin.getLogger().info("Configuration loaded successfully.");
 	}

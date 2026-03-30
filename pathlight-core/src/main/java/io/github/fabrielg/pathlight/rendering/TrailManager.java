@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 
@@ -21,6 +22,7 @@ public class TrailManager implements Listener {
 	private final PathLightPlugin plugin;
 	private final NavigationGraph graph;
 	private final ParticleRenderer renderer;
+	private BukkitTask renderTask = null;
 
 	private final Map<UUID, ActiveTrail> activeTrails = new HashMap<>();
 
@@ -28,6 +30,10 @@ public class TrailManager implements Listener {
 		this.plugin   = plugin;
 		this.graph    = graph;
 		this.renderer = new ParticleRenderer(graph);
+		load();
+	}
+
+	public void load() {
 		startRenderLoop();
 	}
 
@@ -66,7 +72,10 @@ public class TrailManager implements Listener {
 	 * Starts the repeating task that renders and updates all active trails.
 	 */
 	private void startRenderLoop() {
-		new BukkitRunnable() {
+		if (renderTask != null && !renderTask.isCancelled())
+			renderTask.cancel();
+
+		renderTask = new BukkitRunnable() {
 			@Override
 			public void run() {
 				for (Map.Entry<UUID, ActiveTrail> entry : Map.copyOf(activeTrails).entrySet()) {
