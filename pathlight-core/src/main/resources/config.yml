@@ -50,6 +50,9 @@ editor:
   # A block-based radius within which an existing waypoint to snap
   waypoint-snap-radius: 1.5
 
+  # ⚠️ Low spacing and low refresh rates can cause performance issues or even cause the server to crash.
+  # TIP: When using `edge-particle-spacing = 0.1`, do not set `visualization-interval` to less than 3.
+  # TIP: When using `visualization-interval = 1`, do not set `edge-particle-spacing` to less than 3.
   # Spacing between particles used to visualize bonds
   edge-particle-spacing: 0.1
 

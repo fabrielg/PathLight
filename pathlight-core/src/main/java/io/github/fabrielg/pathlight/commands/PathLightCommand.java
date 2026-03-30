@@ -73,6 +73,8 @@ public class PathLightCommand implements CommandExecutor, TabCompleter {
 		plugin.getMessageManager().load();
 		plugin.getDataManager().load();
 		plugin.getNavigationGraph().build();
+		plugin.getNavTool().load();
+		plugin.getTrailManager().load();
 
 		sender.sendMessage("§aPathLight reloaded successfully.");
 		sender.sendMessage("§7Waypoints : §f" + plugin.getDataManager().getWaypoints().size());

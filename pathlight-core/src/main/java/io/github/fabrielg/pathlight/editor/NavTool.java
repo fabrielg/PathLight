@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 
@@ -26,11 +27,10 @@ public class NavTool implements Listener {
 
 	private static final NamespacedKey TOOL_KEY = new NamespacedKey("pathlight", "nav_tool");
 
-	private final double WAYPOINT_CLICK_RADIUS;
-
-	private final double SNAP_RADIUS;
-
+	private double WAYPOINT_CLICK_RADIUS;
+	private double SNAP_RADIUS;
 	private static final int MAX_TARGET_DISTANCE = 20;
+	private BukkitTask visualizationTask = null;
 
 	private final PathLightPlugin plugin;
 	private final Map<UUID, EditorSession> sessions = new HashMap<>();
@@ -38,9 +38,14 @@ public class NavTool implements Listener {
 
 	public NavTool(PathLightPlugin plugin) {
 		this.plugin = plugin;
+		load();
+	}
+
+	public void load() {
 		this.WAYPOINT_CLICK_RADIUS = plugin.getPluginConfig().getWaypointClickRadius();
 		this.SNAP_RADIUS = plugin.getPluginConfig().getWaypointSnapRadius();
 		startVisualizationLoop();
+		plugin.getLogger().info("NavTool loaded successfully.");
 	}
 
 	public ItemStack createToolItem() {
@@ -322,7 +327,9 @@ public class NavTool implements Listener {
 	}
 
 	private void startVisualizationLoop() {
-		new BukkitRunnable() {
+		if (visualizationTask != null && !visualizationTask.isCancelled())
+			visualizationTask.cancel();
+		visualizationTask = new BukkitRunnable() {
 			@Override
 			public void run() {
 				for (Player player : plugin.getServer().getOnlinePlayers()) {
